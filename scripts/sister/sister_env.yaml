@@ -1,0 +1,23 @@
+name: sister
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - earthengine-api
+  - gdal
+  - netCDF4
+  - h5py
+  - numba
+  - numpy
+  - rtree
+  - pyproj
+  - pysolar
+  - pandas
+  - scikit-image
+  - scipy
+  - statsmodels
+  - pip
+  - pip:
+    - ray[default]
+    - hy-tools

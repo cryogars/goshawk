@@ -1,0 +1,26 @@
+name: goshawk
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - spectral
+  - numpy
+  - ipykernel
+  - google-cloud-sdk
+  - earthengine-api
+  - pandas
+  - pyspark
+  - matplotlib
+  - scipy
+  - py3dep
+  - mpi4py
+  - pip
+  - pip:
+    - ray[default]
+    - hy-tools
+    - elevation
+    - dem_stitcher
+    - pysolar
+    - topocalc
+
