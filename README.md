@@ -1,4 +1,5 @@
 # Global Optical Snow properties via High-speed Algorithm With K-means clustering (GOSHAWK)
+[![DOI](https://zenodo.org/badge/756454442.svg)](https://zenodo.org/doi/10.5281/zenodo.10652709)
 
 <p align="center">
     <img src="docs/goshawk.png" alt="goshawk" width="300"/>
