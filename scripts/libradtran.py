@@ -251,7 +251,7 @@ def lut_grid(h20_range,a550_range, alt_range, path_to_img_base, sensor_wavelengt
 
 
 
-def lrt_reader(h, aod, alt, cosi, vza, shadow,svf, slope, rho_surface,
+def lrt_reader(h, aod, alt, cosi, sza, shadow,svf, slope, rho_surface,
                g_l0, g_tup, g_s, g_edir, g_edn,sensor_wavelengths):
     
     '''
@@ -279,7 +279,7 @@ def lrt_reader(h, aod, alt, cosi, vza, shadow,svf, slope, rho_surface,
 
     # Correct to local conditions
     #############################  
-    t_up = t_up / np.cos(np.radians(vza)) 
+    t_up = t_up / np.cos(np.radians(sza)) 
 
     # Adjust local Fdir and Fdiff
     edir =  edir0 * cosi  * shadow #shadow: 0=shadow, 1=sun

@@ -115,7 +115,7 @@ def fun_min(x0, cosi, cosv, theta, sensor_wavelengths, endmembers_opt,
 
     # Get the local irrad and atmos params.
     # This is loading the data from the precomputed LUTs.
-    l0, t_up, sph_alb, s_total = lrt_reader(h, aod, alt,cosi, vza, 
+    l0, t_up, sph_alb, s_total = lrt_reader(h, aod, alt,cosi, sza, 
                                             shadow,svf, slope, rho_surface,
                                             g_l0, g_tup, g_s, g_edir, g_edn,
                                             sensor_wavelengths) 
@@ -177,7 +177,7 @@ def fun_min_light(x0, cosi, cosv, theta, sensor_wavelengths, endmembers_opt,
 
     # Get the local irrad and atmos params.
     # This is loading the data from the precomputed LUTs.
-    l0, t_up, sph_alb, s_total = lrt_reader(h, aod, alt,cosi, vza, 
+    l0, t_up, sph_alb, s_total = lrt_reader(h, aod, alt,cosi, sza, 
                                             shadow,svf, slope, rho_surface,
                                             g_l0, g_tup, g_s, g_edir, g_edn,
                                             sensor_wavelengths) 
@@ -352,7 +352,7 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     # Get the local irrad and atmos params.
     # This is loading the data from the precomputed LUTs.
     l0, t_up, sph_alb, s_total = lrt_reader(h20_opt, aod_opt, alt, 
-                                            cosi, vza, shadow,
+                                            cosi, sza, shadow,
                                             svf, slope, rho_surface,
                                             g_l0, g_tup, g_s, g_edir, g_edn,
                                             sensor_wavelengths)                                          
