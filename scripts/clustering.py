@@ -178,7 +178,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     for row in range(0, np_mean.shape[0]):
         row_array = np_mean[row]
         # Spectra that goes with uni_id
-        cosi_dict[row_array[0]] = row_array[3]
+        cosi_dict[row_array[0]] = row_array[4]
         combo_list.append([row_array[0], #i
                         spectra_dict[row_array[0]], #r
                         row_array[3], #elev-km
