@@ -85,4 +85,4 @@ Please note that variable `path_to_img_base` should look like the following (ple
 - '/home/brentwilder/PRS_20221208184337_20221208184341_0001'
 
 ## References
-Wilder et al., 2024 in review..
+- Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
