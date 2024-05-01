@@ -31,9 +31,6 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.85, b=1.6,
         to
         0.5e-5
 
-    C is a really limited range because of issues seen with hooking in visible range.
-
-
     '''
 
     # Adjust wavelengths for tartes
