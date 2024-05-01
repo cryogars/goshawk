@@ -19,13 +19,12 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.85, b=1.6,
     vza [rad]
     theta [deg]
     ssa [m2kg-1]
-    c [pollution conc]
+    c [ng g-1]
     lwc [percent of liquid water to mix in to the imag indic]
     g and b - shape of grain
     sootD - shape of soot
 
-    Assumes soot, c is relative soot concentration, which currently doesn't have physical meaning for my case.
-    However, currently I am only looking to use it to Model BBA, SSA, and F_Snow
+    Assumes soot, c is soot concentration (Bond 2006) in units of ng /g.
 
     valid ranges for c are:
         0 

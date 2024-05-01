@@ -302,7 +302,7 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     f_em1 = xfinal[2]
     f_em2 = xfinal[3]
     ssa_opt = xfinal[4]*100
-    lap_opt = xfinal[5]*1e-5
+    lap_opt = xfinal[5]*1e-5 * 5.50e9 #scaling to physically meaninful values, Bond,2006 [ng/g]
     lwc_opt = xfinal[6]
     h20_opt = xfinal[7]*100
     aod_opt = xfinal[8]
