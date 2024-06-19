@@ -26,11 +26,13 @@ service_account='brentonwilder1995@brent-snow.iam.gserviceaccount.com'
 ee_json='/bsuhome/bwilder/scratch/SPHERES/brent-snow.json'
 optimal_cosi='yes' #yes or no
 n_cpu=48
+n_nodes=4
 # END USER INPUTS
 
 
 
+n_tasks=$((n_cpu * n_nodes))
 conda activate snow
-MPIEXEC_UNIVERSE_SIZE=192 mpiexec -n 1 python3 ./scripts/pipeline_pt2.py --dem $dem --img $path_to_img_base --lrt $path_to_libradtran_bin --ee_account $service_account --ee_json $ee_json --mu $optimal_cosi --n_cpu $n_cpu
+MPIEXEC_UNIVERSE_SIZE=$n_tasks mpiexec -n 1 python3 ./scripts/pipeline_pt2.py --dem $dem --img $path_to_img_base --lrt $path_to_libradtran_bin --ee_account $service_account --ee_json $ee_json --mu $optimal_cosi --n_cpu $n_cpu
 
 

@@ -37,6 +37,7 @@ service_account='brentonwilder1995@brent-snow.iam.gserviceaccount.com'
 ee_json='/bsuhome/bwilder/scratch/SPHERES/brent-snow.json'
 optimal_cosi='yes' #yes or no
 n_cpu=48
+n_nodes=4
 # END USER INPUTS
 
 python ./scripts/pipeline_pt1.py --dem $dem --img $path_to_img_base --lrt $path_to_libradtran_bin --ee_account $service_account --ee_json $ee_json --mu $optimal_cosi --n_cpu $n_cpu
