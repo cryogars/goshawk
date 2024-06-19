@@ -11,8 +11,6 @@ GOSHAWK can be used to take in imaging spectroscopy radiance data (microW cm-2 n
 
 In it's current state, GOSHAWK expects PRISMA L1A processed via ([SISTER](https://github.com/EnSpec/sister) or EMIT L1B processed via SISTER. Full disclosure the EMIT implementation has not been formally validated , see our paper on testing PRISMA. But the code is structured to take the EMIT data. Other missions may be adapted using this framework.
 
-Also, this method was framed around libRadtran for radiative transfer modeling. However, this codebase could be modified to use MODTRAN or other.
-
 The code was designed to be ran on any kind of Linux clusters mananged by SLURM (e.g., Boise State's **R2** and **Borah** clusters, https://bsu-docs.readthedocs.io/en/latest/) with large amounts of CPU across many nodes. 
 
 
@@ -59,7 +57,7 @@ download __ecospeclib-all__ from ECOSTRESS and save unzipped folder to GOSHAWK d
 
 
 
-## 6. Compile libRadtran :sunny:
+## 6. Download libRadtran :sunny:
 The following instructions can be used to setup on cluster:
 
 ```
@@ -74,11 +72,13 @@ The following instructions can be used to setup on cluster:
 ```
 
 - Please see `goshawk-pt1.bash` that compiles and runs it. NOTE: if your HPC lib are different -or changed- this may cause things to break.. Most likely you will just need to find the correct module to load by searching the available cluster modules.
+- Also note, that libRadtran compiles with python2, and so your cluster will need to have that downloaded (see `goshawk-pt1.bash` )
 
 
 ## 7. Run the model :rocket:
 
-- The image can be ran with bash scripts (submit pts 1-3 .bash) (only recommended on cluster). At this time pipeline_pt1, pipeline_pt2.py, and pipeline_pt3.py need to updated manually for each new image.
+- The image can be ran with bash scripts (submit pts 1-3 .bash).
+- Note: this is made to run on Linux clusters managed by SLURM.
 
 
 Please note that variable `path_to_img_base` should look like the following (please use full path):
@@ -86,3 +86,8 @@ Please note that variable `path_to_img_base` should look like the following (ple
 
 ## References
 - Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
+
+## Ideas for improvements
+- Allow user input for other LAP besides soot (e.g., dust, algal)
+- Allow user input for other snow grain shapes (e.g., fractal, columns, etc)
+- 
