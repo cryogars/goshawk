@@ -1,16 +1,16 @@
 #!/bin/bash
 
 #Account and Email Information
-#SBATCH -A bwilder
+#SBATCH -A YOUR_USER_NAME_HERE
 #SBATCH --mail-type=end
-#SBATCH --mail-user=brentwilder@boisestate.edu
+#SBATCH --mail-user=YOUR_EMAIL_HERE@boisestate.edu
 
-#SBATCH -J GOSHAWK_pt1                                            # job name
-#SBATCH -o /bsuhome/bwilder/scratch/goshawk-mu/slurm/log_slurm.o%j  # output and error file name (%j expands to jobID)
-#SBATCH -p bsudfq                                                  # queue (partition)
-#SBATCH -N 1                                                           # Number of nodes
-#SBATCH --ntasks 48                                                    # Number of tasks 
-#SBATCH -t 00-00:45:00                                                 # run time (d-hh:mm:ss)  
+#SBATCH -J GOSHAWK_pt1                      # job name
+#SBATCH -o ./slurm/log_slurm.o%j            # output and error file name (%j expands to jobID)
+#SBATCH -p bsudfq                           # queue (partition)
+#SBATCH -N 1                                # Number of nodes
+#SBATCH --ntasks 48                         # Number of tasks 
+#SBATCH -t 00-00:45:00                      # run time (d-hh:mm:ss)  
 ulimit -v unlimited
 ulimit -s unlimited
 #SBATCH --exclusive
@@ -27,7 +27,7 @@ PYTHON=$(which python2) ./configure --prefix=$(pwd)
 make
 cd /bsuhome/bwilder/scratch/goshawk-mu
 
-conda activate snow
+conda activate goshawk
 
 # USER INPUTS
 dem='Copernicus' # Copernicus, SRTM, or 3DEP

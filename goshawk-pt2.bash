@@ -1,16 +1,16 @@
 #!/bin/bash
 
 #Account and Email Information
-#SBATCH -A bwilder
+#SBATCH -A YOUR_USER_NAME_HERE
 #SBATCH --mail-type=end
-#SBATCH --mail-user=brentwilder@boisestate.edu
+#SBATCH --mail-user=YOUR_EMAIL_HERE@boisestate.edu
 
-#SBATCH -J GOSHAWK_pt2                                                 # job name
-#SBATCH -o /bsuhome/bwilder/scratch/goshawk-mu/slurm/log_slurm.o%j  # output and error file name (%j expands to jobID)
-#SBATCH -p bsudfq                                                   # queue (partition)
-#SBATCH -N 4                                                           # Number of nodes
-#SBATCH --ntasks 192                                                    # Number of tasks (48/node max Borah)
-#SBATCH -t 00-01:00:00                                                  # run time (d-hh:mm:ss) 
+#SBATCH -J GOSHAWK_pt2                      # job name
+#SBATCH -o ./slurm/log_slurm.o%j            # output and error file name (%j expands to jobID)
+#SBATCH -p bsudfq                           # queue (partition)
+#SBATCH -N 4                                # Number of nodes
+#SBATCH --ntasks 192                        # Number of tasks (48/node max Borah)
+#SBATCH -t 00-01:00:00                      # run time (d-hh:mm:ss) 
 ulimit -v unlimited
 ulimit -s unlimited
 
@@ -32,7 +32,7 @@ n_nodes=4
 
 
 n_tasks=$((n_cpu * n_nodes))
-conda activate snow
+conda activate goshawk
 MPIEXEC_UNIVERSE_SIZE=$n_tasks mpiexec -n 1 python3 ./scripts/pipeline_pt2.py --dem $dem --img $path_to_img_base --lrt $path_to_libradtran_bin --ee_account $service_account --ee_json $ee_json --mu $optimal_cosi --n_cpu $n_cpu
 
 

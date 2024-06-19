@@ -78,7 +78,8 @@ The following instructions can be used to setup on cluster:
 ## 7. Run the model :rocket:
 
 - The image can be ran with bash scripts (sbatch pt 1-3..)
-- Note: this is made to run on Linux clusters managed by SLURM.
+- Note: these 3 scripts are where the user changes inputs. 
+- each one can be ran by running the following in the terminal, `sbatch goshawk-pt1.bash`
 
 
 Please note that variable `path_to_img_base` should look like the following (please use full path):

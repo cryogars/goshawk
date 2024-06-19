@@ -1,16 +1,16 @@
 #!/bin/bash
 
 #Account and Email Information
-#SBATCH -A bwilder
+#SBATCH -A YOUR_USER_NAME_HERE
 #SBATCH --mail-type=end
-#SBATCH --mail-user=brentwilder@boisestate.edu
+#SBATCH --mail-user=YOUR_EMAIL_HERE@boisestate.edu
 
-#SBATCH -J GOSHAWK_pt3                                                    # job name
-#SBATCH -o /bsuhome/bwilder/scratch/goshawk-mu/slurm/log_slurm.o%j # output and error file name (%j expands to jobID)
-#SBATCH -p bsudfq                                                   # queue (partition)
-#SBATCH -N 1                                                           # Number of nodes
-#SBATCH -n 48                                                          # Number of cores
-#SBATCH -t 00-00:10:00                                                  # run time (d-hh:mm:ss) 
+#SBATCH -J GOSHAWK_pt3                          # job name
+#SBATCH -o ./slurm/log_slurm.o%j                # output and error file name (%j expands to jobID)
+#SBATCH -p bsudfq                               # queue (partition)
+#SBATCH -N 1                                    # Number of nodes
+#SBATCH -n 48                                   # Number of cores
+#SBATCH -t 00-00:10:00                          # run time (d-hh:mm:ss) 
 ulimit -v unlimited
 ulimit -s unlimited
 
@@ -28,5 +28,5 @@ n_cpu=48
 n_nodes=4
 # END USER INPUTS
 
-
+conda activate goshawk
 python ./scripts/pipeline_pt3.py --dem $dem --img $path_to_img_base --lrt $path_to_libradtran_bin --ee_account $service_account --ee_json $ee_json --mu $optimal_cosi --n_cpu $n_cpu
