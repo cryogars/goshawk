@@ -9,7 +9,7 @@ This repository was created for use in my PhD dissertation and will be updated t
 
 GOSHAWK can be used to take in imaging spectroscopy radiance data (microW cm-2 nm-1 sr-1) and output optical snow properties. Our algorithm solves for these properties simultaneously using numerical optimization of surface and atmospheric state variables. This code expects the light wavelengths to range from roughly 350-2500nm. 
 
-In it's current state, GOSHAWK expects PRISMA L1A processed via ([SISTER](https://github.com/EnSpec/sister) or EMIT L1B processed via SISTER. Full disclosure the EMIT implementation has not been formally validated , see our paper on testing PRISMA. But the code is structured to take the EMIT data. Other missions may be adapted using this framework.
+In it's current state, GOSHAWK expects PRISMA L1A processed via [SISTER](https://github.com/EnSpec/sister) or EMIT L1B processed via SISTER. Full disclosure the EMIT implementation has not been formally validated , see our paper on testing PRISMA. But the code is structured to take the EMIT data. Other missions may be adapted using this framework.
 
 The code was designed to be ran on any kind of Linux clusters mananged by SLURM (e.g., Boise State's **R2** and **Borah** clusters, https://bsu-docs.readthedocs.io/en/latest/) with large amounts of CPU across many nodes. 
 
@@ -77,7 +77,7 @@ The following instructions can be used to setup on cluster:
 
 ## 7. Run the model :rocket:
 
-- The image can be ran with bash scripts (submit pts 1-3 .bash).
+- The image can be ran with bash scripts (sbatch pt 1-3..)
 - Note: this is made to run on Linux clusters managed by SLURM.
 
 
