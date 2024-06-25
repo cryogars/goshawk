@@ -271,7 +271,8 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
 
     # Run 
     # initial conniditons in order from left to right
-    if optimal_cosi == 'yes':
+    # Update: if there is canopy cover or terrain casted shadow, cosi from DEM is used.
+    if optimal_cosi == 'yes' and lc != 10 and shadow != 0:
         #(fsnow,fshade,fem1,fem2,ssa,LAP,LWC,h,aod,east, north)
         x0 = [0.1, 0.2, 0.5,0.2,0.4,0.0, 0.02, 0.01, 0.1, east_start, north_start]
         lb = [lb_snow, lb_shade, lb_em1 , lb_em2, lb_ssa, lb_lap, lb_lwc, lb_h, lb_aod, lb_east_north, lb_east_north]
