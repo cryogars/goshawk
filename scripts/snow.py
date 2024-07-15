@@ -6,7 +6,7 @@ import pandas as pd
 from scipy import interpolate
 
 
-def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.85, b=1.6, sootD=1.3):
+def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.75, b=1.6, sootD=1.3):
     '''
 
     https://doi.org/10.3389/fenvs.2021.644551
@@ -25,11 +25,6 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.85, b=1.6,
     sootD - shape of soot
 
     Assumes soot, c is soot concentration (Bond 2006) in units of ng /g.
-
-    valid ranges for c are:
-        0 
-        to
-        0.5e-5
 
     '''
 
@@ -71,7 +66,7 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.85, b=1.6,
     p = 11.1 * np.exp(-0.087 * theta) + 1.1 * np.exp(-0.014 * theta)
     r0 = (1.247 + 1.186 * (cos_sza + cos_vza) + 5.157 * cos_sza * cos_vza + p) / 4.0 / (cos_sza + cos_vza)
     
-    # Compute r - plane albedo
+    # Compute r - spherical albedo
     eps =  (9*(1-g)) / (16*b)
     beta = (sootD / b) * c
     gamma_i = (4 * np.pi * k_eff) / wavelengths
@@ -79,10 +74,18 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.85, b=1.6,
     l =  d / eps
     r = np.exp(-np.sqrt(((gamma_i + beta * gamma_p) * l)))
 
-    # Directional Reflectance (rho_s), r0 infinit factor, and r plane albedo
-    rho_s = r0 * r
+    # Escape function - f
+    u1 = 0.6*cos_sza + 1. / 3. + np.sqrt(cos_sza) / 3.
+    u2 = 0.6*cos_vza + 1. / 3. + np.sqrt(cos_vza) / 3.
+    f = (u1 * u2) / r0
 
-    return rho_s , r
+    # Directional Reflectance (rho_s), r0 infinit factor, r spherical albedo, and escape function
+    rho_s = r0 * r**f
+
+    # Compute r_p - plane albedo
+    r_p = r**u1
+
+    return rho_s , r_p
 
 
 
