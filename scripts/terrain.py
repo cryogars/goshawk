@@ -13,8 +13,8 @@ from dateutil import parser
 from datetime import timezone
 from pyproj import CRS
 from pysolar import solar
-#from topocalc.viewf import viewf
-from topocalc_bw.viewf import run_viewf_pool
+
+from viewf import run_viewf_pool
 
 
 def get_surface(dem, path_to_img_base, n_cpu):

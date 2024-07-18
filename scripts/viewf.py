@@ -1,8 +1,8 @@
 import numpy as np
 import multiprocessing as mp
 
-from topocalc_bw.gradient import gradient_d8
-from topocalc_bw.horizon import horizon
+from topocalc import gradient_d8
+from topocalc import horizon
 
 #    **************************
 #    ***UPDATE JULY 17, 2024***
