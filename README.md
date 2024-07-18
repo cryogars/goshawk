@@ -91,5 +91,3 @@ Please note that variable `path_to_img_base` should look like the following (ple
 ## Ideas for improvements
 - Currently uses a coarse 250 m percent canopy cover map. However, a 30 m product exists (https://developers.google.com/earth-engine/datasets/catalog/NASA_MEASURES_GFCC_TC_v3). I could update `get_canopy_cover` to allow for this data source instead.
 - Currently uses the v100 ESA WorldCover land cover map, but they have released a v200 that may provide improvements.https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v200
-- Implement Dozier 2021 topographic horizons 
-

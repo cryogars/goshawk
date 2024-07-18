@@ -13,11 +13,11 @@ from dateutil import parser
 from datetime import timezone
 from pyproj import CRS
 from pysolar import solar
-from topocalc.viewf import viewf
+#from topocalc.viewf import viewf
+from topocalc_bw.viewf import run_viewf_pool
 
 
-
-def get_surface(dem, path_to_img_base):
+def get_surface(dem, path_to_img_base, n_cpu):
     '''
     Select the Digital Elevation Model (DEM) and compute relevant parameters.
 
@@ -126,94 +126,92 @@ def get_surface(dem, path_to_img_base):
         os.system(f'gdaldem slope -compute_edges {dem_prj} {slope} -q')
         os.system(f'gdaldem aspect -compute_edges -zero_for_flat {dem_prj} {aspect} -q')
 
-        # Compute SVF with topo-calc from USDA-ARS
+        # Compute SVF with topo-calc from USDA-ARS (modified using Dozier 2022 equation)
         svf_path = f'{dem_dir}/svf.tif'
-        if os.path.exists(svf_path):
-            pass
-        else:
-            dem_svf = (np.array(gdal.Open(f'{dem_dir}/dem_prj.tif').ReadAsArray())).astype('double')
-            svf, tvf = viewf(dem_svf, spacing=dem_spacing)
-            ref_raster = rio.open(dem_prj)
-            ras_meta = ref_raster.profile
-            with rio.open(svf_path, 'w', **ras_meta) as dst:
-                dst.write(svf, 1)
+        dem_svf = (np.array(gdal.Open(f'{dem_dir}/dem_prj.tif').ReadAsArray())).astype('double')
+        svf = run_viewf_pool(n_cpu, dem_svf, dem_spacing)
+        ref_raster = rio.open(dem_prj)
+        ras_meta = ref_raster.profile
+        with rio.open(svf_path, 'w', **ras_meta) as dst:
+            dst.write(svf, 1)
 
-            saa_path = f'{dem_dir}/saa.tif'
-            sza_path = f'{dem_dir}/sza.tif'
+        # Compute solar and view angles
+        saa_path = f'{dem_dir}/saa.tif'
+        sza_path = f'{dem_dir}/sza.tif'
 
-            # Compute cos_i 
-            # ~~~~~~~~~~~~~
-            ref_raster = rio.open(dem_prj)
-            crs = ref_raster.crs  # ASSUMING USED UTM PROJECTION OPTION IN SISTER
-            ras_meta = ref_raster.profile
+        # Compute cos_i 
+        # ~~~~~~~~~~~~~
+        ref_raster = rio.open(dem_prj)
+        crs = ref_raster.crs  # ASSUMING USED UTM PROJECTION OPTION IN SISTER
+        ras_meta = ref_raster.profile
 
-            # Create mask for sza and saa raster
-            array = observed_loc_array[:, :, 0]
-            mask = np.copy(array)
-            mask[mask != -9999] = 1
-            mask[mask == -9999] = 0
+        # Create mask for sza and saa raster
+        array = observed_loc_array[:, :, 0]
+        mask = np.copy(array)
+        mask[mask != -9999] = 1
+        mask[mask == -9999] = 0
 
-            # Get date from file string
-            if 'EMIT' in path_to_img_base:
-                date_string = path_to_img_base.split("EMIT_L2A_RAD_",1)[1]
-                date_string = date_string[:15]
-            else: # PRISMA
-                date_string = path_to_img_base.split("PRS_",1)[1]
-                date_string = date_string[:14]
-            obs_time = parser.parse(date_string).replace(tzinfo=timezone.utc)
+        # Get date from file string
+        if 'EMIT' in path_to_img_base:
+            date_string = path_to_img_base.split("EMIT_L2A_RAD_",1)[1]
+            date_string = date_string[:15]
+        else: # PRISMA
+            date_string = path_to_img_base.split("PRS_",1)[1]
+            date_string = date_string[:14]
+        obs_time = parser.parse(date_string).replace(tzinfo=timezone.utc)
 
-            # Compute SAA and SZA rasters. Assumes first UTM time.
-            solar_az = solar.get_azimuth(observed_loc_array[:, :, 1],
-                                            observed_loc_array[:, :, 0],
-                                            obs_time)
-            
-            solar_zn = 90-solar.get_altitude(observed_loc_array[:, :, 1],
-                                            observed_loc_array[:, :, 0],
-                                            obs_time)
+        # Compute SAA and SZA rasters. Assumes first UTM time.
+        solar_az = solar.get_azimuth(observed_loc_array[:, :, 1],
+                                        observed_loc_array[:, :, 0],
+                                        obs_time)
+        
+        solar_zn = 90-solar.get_altitude(observed_loc_array[:, :, 1],
+                                        observed_loc_array[:, :, 0],
+                                        obs_time)
 
-            #nodata mask for this is 0
-            ras_meta['nodata'] = 0
-            solar_zn = solar_zn * mask
-            solar_az = solar_az * mask
+        #nodata mask for this is 0
+        ras_meta['nodata'] = 0
+        solar_zn = solar_zn * mask
+        solar_az = solar_az * mask
 
-            with rio.open(sza_path, 'w', **ras_meta) as dst:
-                dst.write(solar_zn, 1)
+        with rio.open(sza_path, 'w', **ras_meta) as dst:
+            dst.write(solar_zn, 1)
 
-            with rio.open(saa_path, 'w', **ras_meta) as dst:
-                dst.write(solar_az, 1)
+        with rio.open(saa_path, 'w', **ras_meta) as dst:
+            dst.write(solar_az, 1)
 
-            os.system(f'gdal_calc.py -A {saa_path} -B {sza_path} -C {slope} -D {aspect} \
-                        --outfile={cos_i} --overwrite \
-                        --calc="sin(B*(pi/180))*sin(C*(pi/180))*cos(A*(pi/180)-D*(pi/180))+cos(B*(pi/180))*cos(C*(pi/180))" --quiet') 
-            
-            # Create cos_v array (cosine of local view zenith angle)
-            s = np.array(gdal.Open(f'{dem_dir}/slope.tif').ReadAsArray())
-            a = np.array(gdal.Open(f'{dem_dir}/aspect.tif').ReadAsArray())
-            cos_v_array = np.sin(observed_obs_array[:,:,2]*(np.pi/180))*np.sin(s*(np.pi/180))*np.cos(observed_obs_array[:,:,1]*(np.pi/180)-a*(np.pi/180))+np.cos(observed_obs_array[:,:,2]*(np.pi/180))*np.cos(s*(np.pi/180))
-            cos_v_array[solar_zn==0] = -9999
-            ras_meta['nodata'] = -9999
-            with rio.open(cos_v, 'w', **ras_meta) as dst:
-                            dst.write(cos_v_array, 1)
+        os.system(f'gdal_calc.py -A {saa_path} -B {sza_path} -C {slope} -D {aspect} \
+                    --outfile={cos_i} --overwrite \
+                    --calc="sin(B*(pi/180))*sin(C*(pi/180))*cos(A*(pi/180)-D*(pi/180))+cos(B*(pi/180))*cos(C*(pi/180))" --quiet') 
+        
+        # Create cos_v array (cosine of local view zenith angle)
+        s = np.array(gdal.Open(f'{dem_dir}/slope.tif').ReadAsArray())
+        a = np.array(gdal.Open(f'{dem_dir}/aspect.tif').ReadAsArray())
+        cos_v_array = np.sin(observed_obs_array[:,:,2]*(np.pi/180))*np.sin(s*(np.pi/180))*np.cos(observed_obs_array[:,:,1]*(np.pi/180)-a*(np.pi/180))+np.cos(observed_obs_array[:,:,2]*(np.pi/180))*np.cos(s*(np.pi/180))
+        cos_v_array[solar_zn==0] = -9999
+        ras_meta['nodata'] = -9999
+        with rio.open(cos_v, 'w', **ras_meta) as dst:
+                        dst.write(cos_v_array, 1)
 
 
-            # Create THETA array (used in computation for snow reflectance)
-            # This is scattering angle with RAA notation to match ART usage
-            # see PyICE and the rest of their work.
-            # RAA = 180 (vaa - saa)
-            cosv = np.copy(cos_v_array)
-            cos_i = np.array(gdal.Open(f'{dem_dir}/cos_i.tif').ReadAsArray())
-            cosi = np.copy(cos_i)
-            cos_raa = np.cos(np.radians(180 - (observed_obs_array[:,:,3] - observed_obs_array[:,:,1])))
-            cosi[cosi<=0.0] = 0.0
-            cosi[cosi>=1.0] = 1.0
-            sini = np.sin(np.arccos(cosi))
-            cosv[cosv<=0.0] = 0.0
-            cosv[cosv>=1.0] = 1.0
-            sinv = np.sin(np.arccos(cosv))
-            theta = np.degrees(np.arccos(-cosi*cosv + sini*sinv*cos_raa)) 
-            theta[solar_zn==0] = -9999
-            with rio.open(theta_path, 'w', **ras_meta) as dst:
-                 dst.write(theta, 1)           
+        # Create THETA array (used in computation for snow reflectance)
+        # This is scattering angle with RAA notation to match ART usage
+        # see PyICE and the rest of their work.
+        # RAA = 180 (vaa - saa)
+        cosv = np.copy(cos_v_array)
+        cos_i = np.array(gdal.Open(f'{dem_dir}/cos_i.tif').ReadAsArray())
+        cosi = np.copy(cos_i)
+        cos_raa = np.cos(np.radians(180 - (observed_obs_array[:,:,3] - observed_obs_array[:,:,1])))
+        cosi[cosi<=0.0] = 0.0
+        cosi[cosi>=1.0] = 1.0
+        sini = np.sin(np.arccos(cosi))
+        cosv[cosv<=0.0] = 0.0
+        cosv[cosv>=1.0] = 1.0
+        sinv = np.sin(np.arccos(cosv))
+        theta = np.degrees(np.arccos(-cosi*cosv + sini*sinv*cos_raa)) 
+        theta[solar_zn==0] = -9999
+        with rio.open(theta_path, 'w', **ras_meta) as dst:
+                dst.write(theta, 1)           
 
     # Exception if input string does not match the req dem string
     else:

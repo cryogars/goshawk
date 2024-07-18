@@ -77,7 +77,7 @@ if __name__ == '__main__':
     logging.info(f'***STARTING SNOW ALBEDO MODEL_PT1***')
 
     # Get DEM and other terrain information
-    bounds, bounds_small= get_surface(dem, path_to_img_base)
+    bounds, bounds_small= get_surface(dem, path_to_img_base, n_cpu)
 
     # Open all of the terrain and view arrays
     dem_dir = f'{path_to_img_base}_albedo/dem_{dem}'
