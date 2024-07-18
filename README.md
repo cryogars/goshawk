@@ -33,7 +33,7 @@ The code was designed to be ran on any kind of Linux clusters mananged by SLURM 
 
 
 ## 3. Set up conda environment via miniconda :snake:
-- If you are using Boise State cluster you can not create conda env on head node in terminal.. So there is a script `goshawk-conda.bash` you can submit to create one. 
+- If you are using Boise State cluster you can not create conda env on head node in terminal.. So there is a script `goshawk-conda.bash` you can submit to create one. Note that all of the bash scripts have my personal paths in them and would need to be changed.
 - Once created, run the following command prior to running the scripts (you always need to activate before running).
 
 ```
@@ -89,8 +89,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 - Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
 
 ## Ideas for improvements
-- Allow user input for other LAP besides soot (e.g., dust, algal)
-- Allow user input for other snow grain shapes (e.g., fractal, columns, etc)
-- Currently uses a coarse 250 m percent canopy cover map. However, a 30 m product exists (https://developers.google.com/earth-engine/datasets/catalog/NASA_MEASURES_GFCC_TC_v3). I could update `get_canopy_cover` to allow for this data source too.
+- Currently uses a coarse 250 m percent canopy cover map. However, a 30 m product exists (https://developers.google.com/earth-engine/datasets/catalog/NASA_MEASURES_GFCC_TC_v3). I could update `get_canopy_cover` to allow for this data source instead.
 - Currently uses the v100 ESA WorldCover land cover map, but they have released a v200 that may provide improvements.https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v200
+- Implement Dozier 2021 topographic horizons 
 
