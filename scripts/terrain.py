@@ -14,7 +14,7 @@ from datetime import timezone
 from pyproj import CRS
 from pysolar import solar
 
-from viewf import run_viewf_pool
+from topocalc import viewf
 
 
 def get_surface(dem, path_to_img_base, n_cpu):
@@ -129,7 +129,7 @@ def get_surface(dem, path_to_img_base, n_cpu):
         # Compute SVF with topo-calc from USDA-ARS (modified using Dozier 2022 equation)
         svf_path = f'{dem_dir}/svf.tif'
         dem_svf = (np.array(gdal.Open(f'{dem_dir}/dem_prj.tif').ReadAsArray())).astype('double')
-        svf = run_viewf_pool(n_cpu, dem_svf, dem_spacing)
+        svf,_ = viewf(dem_svf, dem_spacing)
         ref_raster = rio.open(dem_prj)
         ras_meta = ref_raster.profile
         with rio.open(svf_path, 'w', **ras_meta) as dst:
