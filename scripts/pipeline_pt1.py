@@ -17,7 +17,7 @@ from clouds import simple_cloud_threshold
 from shadow import run_ray_pool
 from earthengine import get_landcover, get_canopy_cover
 from clustering import kmeans_grouping
-from libradtran import lrt_prepper, write_lrt_inp,write_lrt_inp_irrad, lut_grid
+from libradtran import lrt_prepper, lrt_create_args_for_pool, lut_grid
 from postprocessing import kmeans_tifs
 
 
@@ -135,44 +135,29 @@ if __name__ == '__main__':
     vza, umu, phi0, phi, sza, lat_inp, lon_inp, alt_min, alt_max, atmos = lrt_prepper(path_to_img_base, 
                                                                                                 sza_array, 
                                                                                                 selected_elev)
-    path_to_libradtran_base = os.path.dirname(path_to_libradtran_bin)
 
-    # Run the LRT LUT pipeline
+    #### CODE FOR LIBRADTRAN ########################################
+    #################################################################
+    # TODO: this part is fairly slow per image, perhaps at some point could use a surrogate model or other.
+
+
+    # DEFINE h20 range, a550 range, and altitude range here
+    # this is pretty sparse, but can be redefined..
     path_to_libradtran_base = os.path.dirname(path_to_libradtran_bin)
     h20_range = [1,25, 50]
     a550_range = [0.01,0.5,1.0]
     alt_range = [alt_min, alt_max]
-    lrt_inp = []
-    lrt_inp_irrad = []
-    for h in h20_range:
-        for aod in a550_range:
-            for altitude_km in alt_range:
-                
-                cmd = write_lrt_inp(h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
-                                lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
-                                lrt_dir, path_to_libradtran_base)
-                lrt_inp.append([cmd,path_to_libradtran_bin])
-                
-                cmd = write_lrt_inp(h,aod,0, ['sur','eglo'], umu, phi0, phi, vza, 
-                                lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
-                                lrt_dir, path_to_libradtran_base)
-                lrt_inp.append([cmd,path_to_libradtran_bin])
 
-                cmd = write_lrt_inp(h,aod,0.15, ['sur','eglo'], umu, phi0, phi, sza, 
-                                lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
-                                lrt_dir, path_to_libradtran_base)
-                lrt_inp.append([cmd,path_to_libradtran_bin])
-                
-                cmd = write_lrt_inp(h,aod,0.5, ['sur','eglo'], umu, phi0, phi, sza, 
-                                lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
-                                lrt_dir, path_to_libradtran_base)   
-                lrt_inp.append([cmd,path_to_libradtran_bin])
+    lrt_inp_irrad, lrt_inp = lrt_create_args_for_pool(h20_range,
+                                                      a550_range,
+                                                      alt_range,
+                                                      umu, phi0, 
+                                                      phi,vza,
+                                                      sza, lat_inp,
+                                                      lon_inp, doy, atmos, 
+                                                      lrt_dir, 
+                                                      path_to_libradtran_bin)
 
-                cmd = write_lrt_inp_irrad(h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
-                                lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
-                                lrt_dir, path_to_libradtran_base)
-                lrt_inp_irrad.append([cmd,path_to_libradtran_bin])
-    
     def spawn(cmd, path_to_libradtran_bin):   
         exit = subprocess.run(cmd, shell=True, cwd=path_to_libradtran_bin)
 
@@ -188,9 +173,15 @@ if __name__ == '__main__':
                                                path_to_img_base, sensor_wavelengths)
     
     logging.info(f'Gridded LUT created.')
- 
 
-    # Run k-means
+    #################################################################
+    #################################################################
+    #################################################################
+
+
+    # Run k-means clustering
+    # The most computationally demaning part here is the PySpark to group all of the pixels.
+    # If you have lots of CPU here (n=48), this will be just fine, and will be even faster with more.
     combo_list, cluster_matches, spectra_dict, cosi_dict = kmeans_grouping(observed_rad_array, 
                                                                         cloud_mask, 
                                                                         selected_elev,
