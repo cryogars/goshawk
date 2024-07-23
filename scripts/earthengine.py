@@ -39,8 +39,8 @@ def get_landcover(path_to_img_base, bounds, dem, service_account, ee_json):
     area = ee.Feature(ee.Geometry.Rectangle(bounds))
 
     # Load image based on bounds
-    # For now this is just a static land cover dataset of 2020
-    col = 'ESA/WorldCover/v100'
+    # For now this is just a static land cover dataset of 2021
+    col = 'ESA/WorldCover/v200'
     lc = ee.ImageCollection(col).first().clip(area)
 
     # Max download size is 50.33 MB
@@ -94,12 +94,13 @@ def get_landcover(path_to_img_base, bounds, dem, service_account, ee_json):
 
 
 
-def get_canopy_cover(path_to_img_base, bounds, dem, service_account, ee_json):
+def get_canopy_cover(path_to_img_base, bounds, dem, service_account, ee_json, col='NASA/MEASURES/GFCC/TC/v3'):
     '''
     Downloads the canopy cover data from MOD44B.006 Terra Vegetation Continuous Fields Yearly Global 250m on Earth Engine 
     and performs nearest-neighbor resampling to match the extent/resolution of the DEM.
 
     Args:
+        col (str) : Earth engine data collection (currently accepts 'NASA/MEASURES/GFCC/TC/v3' or 'MODIS/006/MOD44B')
         path_to_img_base (str): Path to the base image directory.
         bounds (list): List of bounding coordinates [west, south, east, north].
         dem (str): DEM identifier.
@@ -123,51 +124,94 @@ def get_canopy_cover(path_to_img_base, bounds, dem, service_account, ee_json):
     area = ee.Feature(ee.Geometry.Rectangle(bounds))
 
     # Load image based on bounds
-    # For now this is just a static canopy cover from 2015
-    col = 'MODIS/006/MOD44B'
-    cc = ee.ImageCollection(col).select('Percent_Tree_Cover').mean()
+    if col == 'MODIS/006/MOD44B':
+        # For now this is just a static canopy cover from 2015
+        cc = ee.ImageCollection(col).select('Percent_Tree_Cover').mean().unmask(-9999)
+        # Max download size is 50.33 MB
+        if 'EMIT' in path_to_img_base: 
+            url = cc.getDownloadUrl({
+            'name': 'canopycover',
+            'region': area.geometry(),
+            'scale': 200,
+            })
+        else: #PRISMA
+            url = cc.getDownloadUrl({
+            'name': 'canopycover',
+            'region': area.geometry(),
+            'scale': 200,
+            })
 
-    # Max download size is 50.33 MB
-    if 'EMIT' in path_to_img_base: 
-        url = cc.getDownloadUrl({
-        'name': 'canopycover',
-        'region': area.geometry(),
-        'scale': 200,
-        })
-    else: #PRISMA
-        url = cc.getDownloadUrl({
-        'name': 'canopycover',
-        'region': area.geometry(),
-        'scale': 200,
-        })
+        # Download it locally
+        os.system(f'wget --directory-prefix={path_to_img_base}_albedo/canopy {url}')
 
-    # Download it locally
-    os.system(f'wget --directory-prefix={path_to_img_base}_albedo/canopy {url}')
+        # get the zip file
+        zip_filename = url.rsplit('/', 1)[1]
 
-    # get the zip file
-    zip_filename = url.rsplit('/', 1)[1]
+        # Unzip landcover downloaded from earth engine
+        shutil.unpack_archive(f'{path_to_img_base}_albedo/canopy/{zip_filename}',
+                            f'{path_to_img_base}_albedo/canopy',
+                            format='zip')
+        # Remove the zip file
+        if os.path.exists(f'{path_to_img_base}_albedo/canopy/{zip_filename}'):
+            os.remove(f'{path_to_img_base}_albedo/canopy/{zip_filename}')
 
-    # Unzip landcover downloaded from earth engine
-    shutil.unpack_archive(f'{path_to_img_base}_albedo/canopy/{zip_filename}',
-                          f'{path_to_img_base}_albedo/canopy',
-                          format='zip')
-    # Remove the zip file
-    if os.path.exists(f'{path_to_img_base}_albedo/canopy/{zip_filename}'):
-        os.remove(f'{path_to_img_base}_albedo/canopy/{zip_filename}')
+        # resample it using gdal
+        cc_download = f'{path_to_img_base}_albedo/canopy/canopycover.Percent_Tree_Cover.tif'
 
-    # resample it using gdal
-    cc_prj = f'{path_to_img_base}_albedo/canopy/canopy_prj.tif'
-    cc_download = f'{path_to_img_base}_albedo/canopy/canopycover.Percent_Tree_Cover.tif'
-    ref_raster = rio.open(f'{path_to_img_base}_albedo/dem_{dem}/cos_i.tif')
+    
+    else: # col = 'NASA/MEASURES/GFCC/TC/v3'
+        # For now this is just a static canopy cover from 2015
+        cc = ee.ImageCollection(col).select('tree_canopy_cover').filter(ee.Filter.date('2015-01-01', '2015-12-31')).mean().unmask(-9999)
+        # Max download size is 50.33 MB
+        if 'EMIT' in path_to_img_base: 
+            url = cc.getDownloadUrl({
+            'name': 'canopycover',
+            'region': area.geometry(),
+            'scale': 60,
+            })
+        else: #PRISMA
+            url = cc.getDownloadUrl({
+            'name': 'canopycover',
+            'region': area.geometry(),
+            'scale': 30,
+            })
+
+        # Download it locally
+        os.system(f'wget --directory-prefix={path_to_img_base}_albedo/canopy {url}')
+
+        # get the zip file
+        zip_filename = url.rsplit('/', 1)[1]
+
+        # Unzip landcover downloaded from earth engine
+        shutil.unpack_archive(f'{path_to_img_base}_albedo/canopy/{zip_filename}',
+                            f'{path_to_img_base}_albedo/canopy',
+                            format='zip')
+        # Remove the zip file
+        if os.path.exists(f'{path_to_img_base}_albedo/canopy/{zip_filename}'):
+            os.remove(f'{path_to_img_base}_albedo/canopy/{zip_filename}')
+
+        cc_download = f'{path_to_img_base}_albedo/canopy/canopycover.tree_canopy_cover.tif'
+
+
+    cc_prj = f'{path_to_img_base}_albedo/canopy/canopy_prj_missing.tif'
+    cc_fill = f'{path_to_img_base}_albedo/canopy/canopy_prj.tif'
+
+    # Reference raster
+    ref_raster = rio.open(f'{path_to_img_base}_albedo/dem_{dem}/cos_v.tif')
     crs = ref_raster.crs  # ASSUMING USED UTM PROJECTION OPTION IN SISTER
     west, south, east, north = ref_raster.bounds
-    
+
+
     if 'EMIT' in path_to_img_base:
-        os.system(f'gdalwarp -r nearest -t_srs {crs} -te {west} {south} {east} {north} \
+        os.system(f'gdalwarp -r nearest -srcnodata -9999 -t_srs {crs} -te {west} {south} {east} {north} \
                     -tr 60 60 -overwrite {cc_download} {cc_prj}')
     else:
-        os.system(f'gdalwarp -r nearest -t_srs {crs} -te {west} {south} {east} {north} \
+        os.system(f'gdalwarp -r nearest -srcnodata -9999 -t_srs {crs} -te {west} {south} {east} {north} \
                     -tr 30 30 -overwrite {cc_download} {cc_prj}')
+
+
+    # fill no data
+    os.system(f'gdal_fillnodata.py -md 1000 -q {cc_prj} {cc_fill}')
 
     canopy = np.array(gdal.Open(cc_prj).ReadAsArray())
 
