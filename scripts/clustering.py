@@ -57,6 +57,12 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
 
     '''
 
+
+
+    #######################################################
+    # TODO: this prepping section is a little slow and is also single core
+    # takes about 59 seconds. Can be done in a way to use many cores.
+    #######################################################
     # Clean data
     rad_array = np.copy(rad_og)
     rad_array[rad_array <= -9999] = 0.0
@@ -110,7 +116,12 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
         chunk_clean = np.array(chunk_clean)
         i_chunk_clean = np.array(i_chunk_clean)
         j_chunk_clean = np.array(j_chunk_clean)
-
+    #######################################################
+    #######################################################
+    #######################################################
+    #######################################################
+        # TODO: current single core this seciton in 37 seconds,
+        # Can be sped up to only take a few seconds if i get it going in parallel.
         if chunk_clean.size != 0:
             chunk_clean = np.expand_dims(chunk_clean, axis=0)
             (m, c) = kmeans(chunk_clean, max_clusters, max_iterations)
@@ -136,13 +147,20 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                                                 theta_ij, slope_ij, aspect_ij, svf_ij,
                                                 lc_ij,shadow_ij, rmse_ij])
                     uni_id+=1
-
-
+    #######################################################
+    #######################################################
+    # this section is fairly quick and scales nicely with Pyspark
+    # currently takes 45 seconds on 10 cores.
+    #######################################################
     # turn to pandas dataframe as same dtype
     cluster_matches = np.array(cluster_matches)
     cluster_matches = cluster_matches.astype(float)
     pdf = pd.DataFrame(data=cluster_matches, columns=['uni_id', 'i', 'j', 'elev','cosi', 'cosv',
                                                       'theta', 'slope','aspect','svf','lc','shadow','rmse'])
+
+    # Averaging aspect, need to account for discontinuity
+    pdf['n'] = np.cos(np.radians(pdf['aspect']))
+    pdf['e'] = np.sin(np.radians(pdf['aspect']))
 
     # Create SparkSession with cores=n_cpu
     spark = SparkSession.builder.master(f'local[{cpu}]').config("spark.driver.memory", "15g").appName('goshawk-app').getOrCreate()
@@ -163,11 +181,17 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                   _mean('svf').alias('svf'), \
                   _mean('lc').alias('lc'), \
                   _mean('shadow').alias('shadow'), \
-                  _mean('rmse').alias('rmse')).toPandas()
+                  _mean('rmse').alias('rmse'), \
+                  _mean('n').alias('n'), \
+                  _mean('e').alias('e')).toPandas()
     
     pdf = pdf.round({'lc':-1}) #round to nearest 10 for LC
     pdf = pdf.round({'shadow': 0}) #round to nearest 1 for Shadow (0 or 1)
-    
+
+    # Convert back to aspect (0-360)
+    pdf['aspect'] = np.degrees(np.arctan2(pdf['e'], pdf['n']))
+    pdf['aspect'] = pdf['aspect'].apply(lambda x: x+360 if x < 0.0 else x)
+
     # Vectorize for better looping below
     np_mean = pdf.to_numpy()
 
@@ -200,4 +224,3 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                         optimal_cosi])
 
     return combo_list, cluster_matches, spectra_dict, cosi_dict
-

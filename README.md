@@ -89,4 +89,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 - Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
 
 ## Ideas for improvements
--  faster way than libRadtran but still has the flexiblity of user O3, h2o, aot.
+- libRadtran surrogate
+- better parallel computing for clustering routine
+- perhaps better informed inital state vector for optimization (speedup?). could sample 1 pix, then transfer initial across.
+- 
