@@ -92,7 +92,7 @@ def lrt_prepper(path_to_img_base, sza_array, selected_elev):
 
 
 
-def write_lrt_inp(h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_inp, doy, altitude_km,
+def write_lrt_inp(o3, h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_inp, doy, altitude_km,
               atmos, path_to_libradtran_bin, lrt_dir, path_to_libradtran_base):
     '''
 
@@ -116,7 +116,7 @@ def write_lrt_inp(h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_inp, do
         f.write(f'latitude {lat_inp}\n')
         f.write(f'longitude {lon_inp}\n')
         f.write(f'day_of_year {doy}\n')  # DOY
-        f.write(f'mol_modify O3 300 DU\n')  #  
+        f.write(f'mol_modify O3 {o3} DU\n')  #  
         f.write(f'mol_abs_param reptran coarse\n')  #  
         f.write(f'mol_modify H2O {h} MM\n')  #  
         f.write(f'crs_model rayleigh bodhaine \n')  # 
@@ -134,7 +134,7 @@ def write_lrt_inp(h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_inp, do
 
 
 
-def write_lrt_inp_irrad(h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_inp, doy, altitude_km,
+def write_lrt_inp_irrad(o3, h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_inp, doy, altitude_km,
                         atmos, path_to_libradtran_bin, lrt_dir, path_to_libradtran_base):
     # Run here manually for irrad
     fname = f'{lrt_dir}/lrt_h20_{h}_aot_{aod}_alt_{round(altitude_km*1000)}_IRRAD'
@@ -152,7 +152,7 @@ def write_lrt_inp_irrad(h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, lon_i
         f.write(f'aerosol_default\n')  # 
         f.write(f'aerosol_species_file continental_average\n')  # 
         f.write(f'aerosol_set_tau_at_wvl 550 {aod}\n')  #   
-        f.write(f'mol_modify O3 300 DU\n')  #  
+        f.write(f'mol_modify O3 {o3} DU\n')  #  
         f.write(f'mol_abs_param reptran coarse\n')  #  
         f.write(f'mol_modify H2O {h} MM\n')  #  
         f.write(f'crs_model rayleigh bodhaine \n')  # 
@@ -170,6 +170,7 @@ def lrt_create_args_for_pool(h20_range,
                              phi,vza,
                              sza, lat_inp,
                              lon_inp, doy, atmos, 
+                             o3,
                              lrt_dir, 
                              path_to_libradtran_bin):
     '''
@@ -186,27 +187,27 @@ def lrt_create_args_for_pool(h20_range,
         for aod in a550_range:
             for altitude_km in alt_range:
                 
-                cmd = write_lrt_inp(h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
+                cmd = write_lrt_inp(o3, h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp.append([cmd,path_to_libradtran_bin])
                 
-                cmd = write_lrt_inp(h,aod,0, ['sur','eglo'], umu, phi0, phi, vza, 
+                cmd = write_lrt_inp(o3, h,aod,0, ['sur','eglo'], umu, phi0, phi, vza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp.append([cmd,path_to_libradtran_bin])
 
-                cmd = write_lrt_inp(h,aod,0.15, ['sur','eglo'], umu, phi0, phi, sza, 
+                cmd = write_lrt_inp(o3, h,aod,0.15, ['sur','eglo'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp.append([cmd,path_to_libradtran_bin])
                 
-                cmd = write_lrt_inp(h,aod,0.5, ['sur','eglo'], umu, phi0, phi, sza, 
+                cmd = write_lrt_inp(o3, h,aod,0.5, ['sur','eglo'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)   
                 lrt_inp.append([cmd,path_to_libradtran_bin])
 
-                cmd = write_lrt_inp_irrad(h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
+                cmd = write_lrt_inp_irrad(o3, h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp_irrad.append([cmd,path_to_libradtran_bin])
@@ -227,7 +228,7 @@ def lut_grid(h20_range,a550_range, alt_range, path_to_img_base, sensor_wavelengt
     # LRT dir
     lrt_dir = f'{path_to_img_base}_albedo/libradtran'
 
-    # 
+    # Create empty grids
     l0_arr = np.empty(shape=(len(h20_range),len(a550_range),len(alt_range), len(sensor_wavelengths)))
     t_up_arr = np.empty(shape=(len(h20_range),len(a550_range),len(alt_range), len(sensor_wavelengths)))
     s_arr  = np.empty(shape=(len(h20_range),len(a550_range),len(alt_range), len(sensor_wavelengths)))

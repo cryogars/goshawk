@@ -6,7 +6,7 @@ import numpy as np
 import ee
 from osgeo import gdal
 import rasterio as rio
-
+from dateutil.relativedelta import relativedelta
 
 
 
@@ -91,6 +91,52 @@ def get_landcover(path_to_img_base, bounds, dem, service_account, ee_json):
 
     return landcover
 
+
+
+
+def get_o3(obs_time, bounds, service_account, ee_json):
+    '''
+    Uses Sentinel-5P NRTI O3: Near Real-Time Ozone dataset 
+    to exctract an average O3 in units of DU over the image.
+
+    Underlying assumption is that the average o3 over the 30 km swath does not vary too much.
+
+    It is also averaged over a 2 week span surrounding the observation.
+
+    Args:
+        obs_time (datetime object): timestamp of the image
+        path_to_img_base (str): Path to the base image directory.
+        bounds (list): List of bounding coordinates [west, south, east, north].
+        dem (str): DEM identifier.
+        service_account (str): Google Earth Engine service account.
+        ee_json (str): Path to the Earth Engine JSON key file.
+
+    Returns:
+        o3 (float): average ozone for entire image
+    '''
+
+    # This is specific to my Google server account to be able to run on linux cluster
+    service_account = service_account
+    credentials = ee.ServiceAccountCredentials(service_account, ee_json)
+    ee.Initialize(credentials)
+
+    # Define our area of interest (based on bounds from init script)
+    area = ee.Feature(ee.Geometry.Rectangle(bounds))
+
+    # 1 week delta
+    time_before = obs_time - relativedelta(weeks=1)
+    time_after = obs_time + relativedelta(weeks=1)
+
+    # Compute mean o3
+    o3_col = ee.ImageCollection('COPERNICUS/S5P/NRTI/L3_O3').select('O3_column_number_density').filterDate(time_before, time_after)
+    o3_img = o3_col.mean().setDefaultProjection(o3_col.first().projection()).clip(area).unmask(-9999) #add mask
+    o3_img = o3_img.reduceRegion(reducer=ee.Reducer.toList(),geometry=area.geometry()) #clip to geom
+    o3 = np.array((ee.Array(o3_img.get("O3_column_number_density")).getInfo())) #convert to array
+    o3 = o3[o3 >- 9999] #mask NaN
+    o3 = np.mean(o3)/ (4.4615*10**-4) # convert to mol/m2 to DU
+    print(o3)
+
+    return o3
 
 
 
