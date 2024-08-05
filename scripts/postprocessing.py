@@ -343,7 +343,7 @@ def special_cases(i,j,lc_ij,cc_ij,combo_ij,ndsi,ndvi):
         opt_out = [i, j, 0, 0,0, 0,0,0, 0, 0, 0, 0.25, combo_ij[11], 0, 0, 0, 0, -9999]
         return opt_out
 
-    # For f_snow obs too low (75%)
+    # Keeping only very confident snow pixels , where f_snow >75%
     if combo_ij[1] <= 0.75:
         opt_out = [i, j, combo_ij[1], combo_ij[2], combo_ij[3],combo_ij[4], -9999,-9999, -9999, -9999, -9999, -9999, -9999, -9999, -9999, -9999, -9999, -9999]
         return opt_out
