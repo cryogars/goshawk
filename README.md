@@ -91,4 +91,3 @@ Please note that variable `path_to_img_base` should look like the following (ple
 ## Ideas for improvements
 - libRadtran surrogate
 - better parallel computing for clustering routine
-- perhaps better informed inital state vector for optimization (speedup?). could sample 1 pix, then transfer initial across.
