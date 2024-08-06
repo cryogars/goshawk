@@ -4,7 +4,9 @@ import pandas as pd
 from spectral import *
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import mean as _mean
+import logging
 
+import matplotlib.pyplot as plt
 
 def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                     theta, svf, lc, 
@@ -56,12 +58,16 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
         TODO
 
     '''
+    # Locate the SPy logger and suppress info on each iteration..
+    spy_logger = logging.getLogger('spectral')
+    spy_logger.setLevel(logging.CRITICAL)
 
 
+    from datetime import datetime
+    startTime = datetime.now()
 
     #######################################################
-    # TODO: this prepping section is a little slow and is also single core
-    # takes about 59 seconds. Can be done in a way to use many cores.
+    # Section speed on single core is 5.8 seconds
     #######################################################
     # Clean data
     rad_array = np.copy(rad_og)
@@ -90,10 +96,18 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     i_chunks_list = []
     j_chunks_list = []
     for uni in unique_cosi:
-        chunks_list.append(rad_array_flat[cosi_array_flat==uni,:])
-        i_chunks_list.append(i_array_flat[cosi_array_flat==uni])
-        j_chunks_list.append(j_array_flat[cosi_array_flat==uni])
-    
+        idx = np.where(cosi_array_flat==uni)
+        chunks_list.append(rad_array_flat[idx,:])
+        i_chunks_list.append(i_array_flat[idx])
+        j_chunks_list.append(j_array_flat[idx])
+    print('FINISHED SORTING UNIQUE VALUES',datetime.now() - startTime)
+
+
+    #######################################################
+    #######################################################
+    #######################################################
+    #######################################################
+    # TODO: current single core this seciton in 34 seconds,
     # loop through all chunks and apply k-means clustering
     # in the end, they will be compiled into the whole image
     uni_id = 0
@@ -116,21 +130,16 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
         chunk_clean = np.array(chunk_clean)
         i_chunk_clean = np.array(i_chunk_clean)
         j_chunk_clean = np.array(j_chunk_clean)
-    #######################################################
-    #######################################################
-    #######################################################
-    #######################################################
-        # TODO: current single core this seciton in 37 seconds,
-        # Can be sped up to only take a few seconds if i get it going in parallel.
+        
         if chunk_clean.size != 0:
-            chunk_clean = np.expand_dims(chunk_clean, axis=0)
+            #chunk_clean = np.expand_dims(chunk_clean, axis=0)
             (m, c) = kmeans(chunk_clean, max_clusters, max_iterations)
             for q in range(c.shape[0]): 
                 locs_in_chunk = np.argwhere(m == q)
                 if locs_in_chunk.size != 0:
                     spectra_dict[uni_id] = c[q]
                     for loc in locs_in_chunk:
-                        idx_kmeans = int(loc[1])
+                        idx_kmeans = int(loc[0])
                         i_exact = int(i_chunk_clean[idx_kmeans])
                         j_exact = int(j_chunk_clean[idx_kmeans])
                         dem_ij = dem[i_exact, j_exact] / 1000 #km   
@@ -147,10 +156,12 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                                                 theta_ij, slope_ij, aspect_ij, svf_ij,
                                                 lc_ij,shadow_ij, rmse_ij])
                     uni_id+=1
+    print('FINISHED RUNNING K-MEANS',datetime.now() - startTime)
+
     #######################################################
     #######################################################
     # this section is fairly quick and scales nicely with Pyspark
-    # currently takes 45 seconds on 10 cores.
+    # TODO: test to see if I can bring the task sizes down??
     #######################################################
     # turn to pandas dataframe as same dtype
     cluster_matches = np.array(cluster_matches)
@@ -162,28 +173,43 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     pdf['n'] = np.cos(np.radians(pdf['aspect']))
     pdf['e'] = np.sin(np.radians(pdf['aspect']))
 
-    # Create SparkSession with cores=n_cpu
-    spark = SparkSession.builder.master(f'local[{cpu}]').config("spark.driver.memory", "15g").appName('goshawk-app').getOrCreate()
+    # Create SparkSession
+    spark = SparkSession.builder \
+            .master(f'local[{cpu}]') \
+            .config("spark.driver.memory", "16g") \
+            .config("spark.executor.memory", "16g") \
+            .config("spark.executor.cores", f"{int(cpu / 2)}") \
+            .config("spark.executor.instances", f"{int(cpu / 2)}") \
+            .config("spark.sql.shuffle.partitions", "100") \
+            .appName('goshawk-app') \
+            .getOrCreate()
 
-    # Save as a spark dataframe
+    # Create DataFrame
     sdf = spark.createDataFrame(pdf)
 
-    # perform groupby operations and save back to pandas dataframe
+    # Repartition the DataFrame
+    sdf = sdf.repartition(100) 
+
+
+    # Perform groupby operations
     pdf = sdf.groupBy('uni_id') \
-             .agg(_mean('i').alias('i'), \
-                  _mean('j').alias('j'), \
-                  _mean('elev').alias('elev'), \
-                  _mean('cosi').alias('cosi'), \
-                  _mean('cosv').alias('cosv'), \
-                  _mean('theta').alias('theta'), \
-                  _mean('slope').alias('slope'), \
-                  _mean('aspect').alias('aspect'), \
-                  _mean('svf').alias('svf'), \
-                  _mean('lc').alias('lc'), \
-                  _mean('shadow').alias('shadow'), \
-                  _mean('rmse').alias('rmse'), \
-                  _mean('n').alias('n'), \
-                  _mean('e').alias('e')).toPandas()
+            .agg(_mean('i').alias('i'), \
+                _mean('j').alias('j'), \
+                _mean('elev').alias('elev'), \
+                _mean('cosi').alias('cosi'), \
+                _mean('cosv').alias('cosv'), \
+                _mean('theta').alias('theta'), \
+                _mean('slope').alias('slope'), \
+                _mean('aspect').alias('aspect'), \
+                _mean('svf').alias('svf'), \
+                _mean('lc').alias('lc'), \
+                _mean('shadow').alias('shadow'), \
+                _mean('rmse').alias('rmse'), \
+                _mean('n').alias('n'), \
+                _mean('e').alias('e')).toPandas()
+
+    # Unpersist DataFrame after operations
+    sdf.unpersist()
     
     pdf = pdf.round({'lc':-1}) #round to nearest 10 for LC
     pdf = pdf.round({'shadow': 0}) #round to nearest 1 for Shadow (0 or 1)
@@ -222,5 +248,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                         g_l0, g_tup, 
                         g_s, g_edir, g_edn,
                         optimal_cosi])
+
+    print('FINISHED PYSPARK',datetime.now() - startTime)
 
     return combo_list, cluster_matches, spectra_dict, cosi_dict
