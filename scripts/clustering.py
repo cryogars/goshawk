@@ -2,11 +2,10 @@
 import numpy as np
 import pandas as pd
 from spectral import *
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean as _mean
+import dask.dataframe as dd
+from dask.diagnostics import ProgressBar
 import logging
 
-import matplotlib.pyplot as plt
 
 def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                     theta, svf, lc, 
@@ -19,7 +18,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                     cosi_decimals=4, max_clusters=10, 
                     max_iterations=100):
     '''
-    Computes k-means grouping for the entire image. It leverages PySpark in order to compute spatial 
+    Computes k-means grouping for the entire image. It leverages Dask in order to compute spatial 
     statistics for each class (#classes > 50,000). These averages are then saved with the clustered spectra,
     to be outputted and passed along for optimization.  
     
@@ -63,8 +62,8 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     spy_logger.setLevel(logging.CRITICAL)
 
 
-    from datetime import datetime
-    startTime = datetime.now()
+    #from datetime import datetime
+    #startTime = datetime.now()
 
     #######################################################
     # Section speed on single core is 5.8 seconds
@@ -100,7 +99,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
         chunks_list.append(rad_array_flat[idx,:])
         i_chunks_list.append(i_array_flat[idx])
         j_chunks_list.append(j_array_flat[idx])
-    print('FINISHED SORTING UNIQUE VALUES',datetime.now() - startTime)
+    #print('FINISHED SORTING UNIQUE VALUES',datetime.now() - startTime)
 
 
     #######################################################
@@ -156,12 +155,11 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                                                 theta_ij, slope_ij, aspect_ij, svf_ij,
                                                 lc_ij,shadow_ij, rmse_ij])
                     uni_id+=1
-    print('FINISHED RUNNING K-MEANS',datetime.now() - startTime)
+    #print('FINISHED RUNNING K-MEANS',datetime.now() - startTime)
 
     #######################################################
     #######################################################
-    # this section is fairly quick and scales nicely with Pyspark
-    # TODO: test to see if I can bring the task sizes down??
+    # this section is fairly quick and scales nicely with DASK
     #######################################################
     # turn to pandas dataframe as same dtype
     cluster_matches = np.array(cluster_matches)
@@ -173,51 +171,40 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     pdf['n'] = np.cos(np.radians(pdf['aspect']))
     pdf['e'] = np.sin(np.radians(pdf['aspect']))
 
-    # Create SparkSession
-    spark = SparkSession.builder \
-            .master(f'local[{cpu}]') \
-            .config("spark.driver.memory", "16g") \
-            .config("spark.executor.memory", "16g") \
-            .config("spark.executor.cores", f"{int(cpu / 2)}") \
-            .config("spark.executor.instances", f"{int(cpu / 2)}") \
-            .config("spark.sql.shuffle.partitions", "100") \
-            .appName('goshawk-app') \
-            .getOrCreate()
 
-    # Create DataFrame
-    sdf = spark.createDataFrame(pdf)
-
-    # Repartition the DataFrame
-    sdf = sdf.repartition(100) 
-
+    # Creating dask with N cpu partiions
+    ddf = dd.from_pandas(pdf, npartitions=cpu)
 
     # Perform groupby operations
-    pdf = sdf.groupBy('uni_id') \
-            .agg(_mean('i').alias('i'), \
-                _mean('j').alias('j'), \
-                _mean('elev').alias('elev'), \
-                _mean('cosi').alias('cosi'), \
-                _mean('cosv').alias('cosv'), \
-                _mean('theta').alias('theta'), \
-                _mean('slope').alias('slope'), \
-                _mean('aspect').alias('aspect'), \
-                _mean('svf').alias('svf'), \
-                _mean('lc').alias('lc'), \
-                _mean('shadow').alias('shadow'), \
-                _mean('rmse').alias('rmse'), \
-                _mean('n').alias('n'), \
-                _mean('e').alias('e')).toPandas()
+    result = ddf.groupby('uni_id').agg({
+        'i': 'mean',
+        'j': 'mean',
+        'elev': 'mean',
+        'cosi': 'mean',
+        'cosv': 'mean',
+        'theta': 'mean',
+        'slope': 'mean',
+        'aspect': 'mean',
+        'svf': 'mean',
+        'lc': 'mean',
+        'shadow': 'mean',
+        'rmse': 'mean',
+        'n': 'mean',
+        'e': 'mean'
+    })
 
-    # Unpersist DataFrame after operations
-    sdf.unpersist()
+    # Convert back to pandas DataFrame
+    with ProgressBar():
+        pdf = result.compute()
     
+    # Perform rounding for LC and Shadow
     pdf = pdf.round({'lc':-1}) #round to nearest 10 for LC
     pdf = pdf.round({'shadow': 0}) #round to nearest 1 for Shadow (0 or 1)
 
     # Convert back to aspect (0-360)
     pdf['aspect'] = np.degrees(np.arctan2(pdf['e'], pdf['n']))
     pdf['aspect'] = pdf['aspect'].apply(lambda x: x+360 if x < 0.0 else x)
-
+    print(pdf)
     # Vectorize for better looping below
     np_mean = pdf.to_numpy()
 
@@ -249,6 +236,6 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                         g_s, g_edir, g_edn,
                         optimal_cosi])
 
-    print('FINISHED PYSPARK',datetime.now() - startTime)
+    #print('FINISHED DASK',datetime.now() - startTime)
 
     return combo_list, cluster_matches, spectra_dict, cosi_dict

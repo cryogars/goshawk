@@ -10,7 +10,7 @@ dependencies:
   - google-cloud-sdk
   - earthengine-api
   - pandas
-  - pyspark=3.4.1
+  - dask=2024.5.0
   - matplotlib
   - scipy=1.11.2
   - py3dep=0.15.0
