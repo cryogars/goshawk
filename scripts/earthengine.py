@@ -134,7 +134,6 @@ def get_o3(obs_time, bounds, service_account, ee_json):
     o3 = np.array((ee.Array(o3_img.get("O3_column_number_density")).getInfo())) #convert to array
     o3 = o3[o3 >- 9999] #mask NaN
     o3 = np.mean(o3)/ (4.4615*10**-4) # convert to mol/m2 to DU
-    print(o3)
 
     return o3
 
