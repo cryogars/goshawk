@@ -221,10 +221,10 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     
     # Define impurity scale factor (used to more standardize vector in optimization)
     if impurity_type == 'Dust':
-        impurity_sf = 1e-4 # scaled in optimization
+        impurity_sf = 1e-5 # scaled in optimization
         impurity_sf_result = (2.65/0.917) * 10e9 # [ng g-1]
     elif impurity_type == 'Soot':
-        impurity_sf = 1e-5 # scaled in optimization
+        impurity_sf = 1e-6 # scaled in optimization
         impurity_sf_result = 5.50e9 # [ng g-1]
     else: # clean snow
         impurity_sf = 0
