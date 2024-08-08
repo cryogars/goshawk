@@ -24,6 +24,7 @@ path_to_libradtran_bin='/bsuhome/bwilder/scratch/SPHERES/libRadtran-2.0.4/bin'
 service_account='brentonwilder1995@brent-snow.iam.gserviceaccount.com'
 ee_json='/bsuhome/bwilder/scratch/SPHERES/brent-snow.json'
 optimal_cosi='yes' #yes or no
+impurity_type='Dust' #Dust or Soot
 n_cpu=48
 n_nodes=4
 # END USER INPUTS

@@ -6,7 +6,8 @@ import pandas as pd
 from scipy import interpolate
 
 
-def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.75, b=1.6, sootD=1.3):
+def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, 
+        g=0.75, b=1.6, pollutant='Dust'):
     '''
 
     https://doi.org/10.3389/fenvs.2021.644551
@@ -22,13 +23,13 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.75, b=1.6,
     c [ng g-1]
     lwc [percent of liquid water to mix in to the imag indic]
     g and b - shape of grain
-    sootD - shape of soot
 
-    Assumes soot, c is soot concentration (Bond 2006) in units of ng /g.
+    Soot, c is soot concentration (Bond 2006) in units of ng /g.
+    Dust, c is dust concentration (Caponi 2017) in units of ng / g. We assume MAE400=180 and aae=3.2
 
     '''
 
-    # Adjust wavelengths for tartes
+    # Adjust wavelengths
     wavelengths = sensor_wavelengths*1e-9
 
     # Ensure optimization stays in bounds
@@ -42,13 +43,12 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.75, b=1.6,
         theta = 0.0
         cos_sza = 1.0
 
+
     # Convert SSA
     d = 6 / (917*ssa)
 
     # Get ice and soot imag indices
     r_ice,k_ice = refice2016(wavelengths)
-    #k_soot = 1.95 - 0.79j
-    k_soot = 0.79
 
     # Load in Segelstein 81 water data
     water_path = './data/segelstein81_index.csv'
@@ -62,18 +62,42 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.75, b=1.6,
     # Composite refractive index
     k_eff = (1-lwc)*k_ice + lwc*k_water
 
+
     # r0 - semi-infinite non-absorbing snow layer
     p = 11.1 * np.exp(-0.087 * theta) + 1.1 * np.exp(-0.014 * theta)
     r0 = (1.247 + 1.186 * (cos_sza + cos_vza) + 5.157 * cos_sza * cos_vza + p) / 4.0 / (cos_sza + cos_vza)
-    
-    # Compute r - spherical albedo
-    eps =  (9*(1-g)) / (16*b)
-    beta = (sootD / b) * c
-    gamma_i = (4 * np.pi * k_eff) / wavelengths
-    gamma_p = (4 * np.pi * k_soot) / wavelengths
-    l =  d / eps
-    r = np.exp(-np.sqrt(((gamma_i + beta * gamma_p) * l)))
 
+
+    # Compute r - spherical albedo (considering different polutants)
+    # Set pollutant constants
+    if pollutant == 'Dust':
+        aae = 3.2 # fixed based on PM2_5 China in Caponi 2017
+        mae400 = 180 # fixed based on PM2_5 China in Caponi 2017
+        mae = mae400 * (wavelengths / 400e-9)**(-aae)
+        eps =  (9*(1-g)) / (16*b)
+        beta = 2.0 / d * mae * c
+        gamma_i = (4 * np.pi * k_eff) / wavelengths
+        l =  d / eps
+        r = np.exp(-np.sqrt(((gamma_i + beta) * l)))
+
+    elif pollutant == 'Soot':
+        #k_pollutant = 1.95 - 0.79j
+        k_pollutant = 0.79
+        pollutant_D=1.3
+        eps =  (9*(1-g)) / (16*b)
+        beta = (pollutant_D / b) * c
+        gamma_i = (4 * np.pi * k_eff) / wavelengths
+        gamma_p = (4 * np.pi * k_pollutant) / wavelengths
+        l =  d / eps
+        r = np.exp(-np.sqrt(((gamma_i + beta * gamma_p) * l)))
+
+    else: #pollutant==None
+        eps =  (9*(1-g)) / (16*b)
+        gamma_i = (4 * np.pi * k_eff) / wavelengths
+        l =  d / eps
+        r = np.exp(-np.sqrt(((gamma_i) * l)))
+    
+ 
     # Escape function - f
     u1 = 0.6*cos_sza + 1. / 3. + np.sqrt(cos_sza) / 3.
     u2 = 0.6*cos_vza + 1. / 3. + np.sqrt(cos_vza) / 3.
@@ -86,6 +110,8 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, g=0.75, b=1.6,
     r_p = r**u1
 
     return rho_s , r_p
+
+
 
 
 
@@ -204,3 +230,4 @@ ki2016_allsites_i = np.array([3.066803487174857984e-02,2.651605554756345656e-02,
 ################################
 # BORROWED CODE HERE FROM TARTES
 ################################
+

@@ -14,7 +14,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                     lat_mean, lon_mean, shadow_arr,
                     sza, vza, saa, vaa, 
                     g_l0, g_tup, g_s, g_edir, g_edn,
-                    optimal_cosi, cpu,
+                    optimal_cosi, impurity_type, cpu,
                     cosi_decimals=4, max_clusters=10, 
                     max_iterations=100):
     '''
@@ -33,28 +33,6 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     (less than 0.01 RMSE in spectral and cosi space) AND to ensure number of clusters remains low enough 
     to not create too many inversions later on in optimization.py. 
 
-
-
-    Args:
-        rad_array (ndarray): topographically corrected raster of observed radiance from image spec
-        cloud_mask (ndarray): Output raster of Zhai function (1=cloud, 0=none)
-        cosi (ndarray): raster of selected cosine of solar illumination angle
-        svf (ndarray): raster of selected skyview fraction
-        lc (ndarray): raster of WorldCover Land cover dataset
-        density (ndarray): snow density resampled to image from ERA-Land
-        sza_array (ndarry): solar zenith angle array
-        sensor_wavelengths (ndarray): 1d array of the sensor wavelengths in nanometers
-        path_to_img_base (str): the path to the image spec data
-        wet (Bool): bool to determine of snow is wet or dry conditions in optimization
-        lat_mean (float): mean latitude across the image
-        lon_mean (float): mean longitude across the image
-        shadow_arr (ndarray): computed using ray tracing to determine areas that are shaded by local terrain
-        cosi_decimals (float): the number of decimals to round the cosine of solar illumination - used for grouping in kmeans (default=4)
-        max_clusters (float): the maximum number kmeans clusters that can be solved for during iterations in a given group (default=10)
-        max_iterations (float): the maximum number of iterations allowed for searching given chunk for clusters (default=100)
-
-    Returns:
-        TODO
 
     '''
     # Locate the SPy logger and suppress info on each iteration..
@@ -234,7 +212,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
                         saa, vaa,
                         g_l0, g_tup, 
                         g_s, g_edir, g_edn,
-                        optimal_cosi])
+                        optimal_cosi, impurity_type])
 
     #print('FINISHED DASK',datetime.now() - startTime)
 

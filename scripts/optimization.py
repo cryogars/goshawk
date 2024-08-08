@@ -80,7 +80,7 @@ def fun_min(x0, cosi, cosv, theta, sensor_wavelengths, endmembers_opt,
             alt, shadow, svf, slope, aspect, 
             observed_radiance_transpose,
             g_l0, g_tup, g_s, g_edir, g_edn, 
-            ix, optimal_cosi):
+            ix, optimal_cosi, impurity_sf):
     '''
     Define the objective function.
     
@@ -93,7 +93,7 @@ def fun_min(x0, cosi, cosv, theta, sensor_wavelengths, endmembers_opt,
     # Get x0 ready
     fractional_area_opt = np.array([[x0[0]], [x0[1]], [x0[2]], [x0[3]]])
     ssa = x0[4] * 100
-    lap = x0[5] * 1e-5
+    lap = x0[5] * impurity_sf
     lwc = x0[6]
     h = x0[7] * 100
     aod = x0[8]
@@ -205,7 +205,8 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
                                 sensor_wavelengths, 
                                 lat_mean, lon_mean, 
                                 sza, vza, saa, vaa,
-                                g_l0, g_tup, g_s, g_edir, g_edn, optimal_cosi):
+                                g_l0, g_tup, g_s, g_edir, g_edn, 
+                                optimal_cosi, impurity_type):
     '''
     Compute from the combo list found from kmeans clustering (or for a single pixel)
 
@@ -217,6 +218,16 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     # Note on TARTES, it cannot be exactly 0.0 here so using a very small val (1e-16)
     if cosi <= 0.0:
         cosi = 1e-16
+    
+    # Define impurity scale factor (used to more standardize vector in optimization)
+    if impurity_type == 'Dust':
+        impurity_sf = 1e-4 # scaled in optimization
+        impurity_sf_result = (2.65/0.917) * 10e9 # [ng g-1]
+    elif impurity_type == 'Soot':
+        impurity_sf = 1e-5 # scaled in optimization
+        impurity_sf_result = 5.50e9 # [ng g-1]
+    else: # clean snow
+        impurity_sf = 0
 
     # Transpose the observed reflectance to 1 column
     observed_radiance_transpose = r.T
@@ -292,7 +303,7 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
                                   svf, slope, aspect, 
                                   observed_radiance_transpose,
                                   g_l0, g_tup, g_s, g_edir, g_edn, 
-                                  ix, optimal_cosi),
+                                  ix, optimal_cosi, impurity_sf),
                                   method='SLSQP',
                                   constraints=con, bounds=bounds, options=opt)
     
@@ -303,7 +314,7 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     f_em1 = xfinal[2]
     f_em2 = xfinal[3]
     ssa_opt = xfinal[4]*100
-    lap_opt = xfinal[5]*1e-5 * 5.50e9 #scaling to physically meaninful values, Bond,2006 [ng/g]
+    lap_opt = xfinal[5]*impurity_sf
     lwc_opt = xfinal[6]
     h20_opt = xfinal[7]*100
     aod_opt = xfinal[8]
@@ -342,8 +353,6 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     ssa_opt = xfinal[0]
     rmse = opt_result.fun
 
-
-
     # If everything looks good continue with calling ART one more time to save outputs
     rho_s , alb_snow = art(ssa_opt, lap_opt, lwc_opt, cosi, cosv, theta, sensor_wavelengths)
     snow_reflectance_transpose = rho_s.T
@@ -362,7 +371,10 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     l_toa = l0 + (1/np.pi) * ((rho_surface * s_total* t_up) / (1 - sph_alb * rho_surface))
 
     # Calculate broadband albedo
-    broadband = np.trapz(alb_snow * s_total, dx=1) / np.trapz(s_total, dx=1)  
+    broadband = np.trapz(alb_snow * s_total, dx=1) / np.trapz(s_total, dx=1) 
+
+    # Transform LAP results to be in units of ng g-1
+    lap_opt = lap_opt * impurity_sf_result
 
     # Save all the outputs to a list
     combo_opt = [i, #0
