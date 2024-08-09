@@ -5,7 +5,7 @@ channels:
 dependencies:
   - python=3.10
   - spectral
-  - numpy
+  - numpy=1.26.4
   - ipykernel
   - google-cloud-sdk
   - earthengine-api
@@ -14,7 +14,7 @@ dependencies:
   - matplotlib
   - scipy
   - py3dep
-  - mpi4py
+  - mpi4py=3.1.4
   - pip
   - pip:
     - ray[default]

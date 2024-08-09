@@ -32,5 +32,6 @@ n_nodes=4
 
 n_tasks=$((n_cpu * n_nodes))
 conda activate goshawk
-export I_MPI_SPAWN=on
+
 MPIEXEC_UNIVERSE_SIZE=$n_tasks mpiexec -n 1 python3 ./scripts/pipeline_pt2.py --dem $dem --img $path_to_img_base --lrt $path_to_libradtran_bin --ee_account $service_account --ee_json $ee_json --mu $optimal_cosi --n_cpu $n_cpu
+
