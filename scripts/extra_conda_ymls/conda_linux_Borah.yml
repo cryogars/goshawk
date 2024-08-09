@@ -1,4 +1,4 @@
-name: goshawk3
+name: goshawk
 channels:
   - conda-forge
   - defaults
