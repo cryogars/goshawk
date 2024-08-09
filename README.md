@@ -90,3 +90,8 @@ Please note that variable `path_to_img_base` should look like the following (ple
 
 ## Ideas for improvements
 - libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance
+
+## Current speeds
+- PT1: 48 CPU - Run time 00:16:43
+- PT2: 192 CPU - Run time 00:11:00
+- PT3: 48 CPU - Run time 00:03:51
