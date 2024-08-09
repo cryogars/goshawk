@@ -175,6 +175,9 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     with ProgressBar():
         pdf = result.compute()
     
+    # Reset index
+    pdf = pdf.reset_index()
+    
     # Perform rounding for LC and Shadow
     pdf = pdf.round({'lc':-1}) #round to nearest 10 for LC
     pdf = pdf.round({'shadow': 0}) #round to nearest 1 for Shadow (0 or 1)
@@ -217,3 +220,4 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     #print('FINISHED DASK',datetime.now() - startTime)
 
     return combo_list, cluster_matches, spectra_dict, cosi_dict
+
