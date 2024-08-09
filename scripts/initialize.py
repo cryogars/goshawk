@@ -100,127 +100,127 @@ def initial_endmembers(sensor_wavelengths, landcover_value, lat, lon):
     if landcover_value == 10 and boreal is False:
         # Ponderosa Pine
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.tree.pinus.ponderosa.vswir.vh249.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
 
         # rock outcrop.. granite
         endmember_2 = pd.read_csv(f'{eco_dir}/rock.igneous.felsic.solid.all.granite_h1.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
     
     elif landcover_value == 10 and boreal is True:
         # Ponderosa Pine (TRY AND FIND SPRUCE SPECTRA!)
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.tree.pinus.ponderosa.vswir.vh249.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
 
         # Branches
         endmember_2 = pd.read_csv(f'{eco_dir}/nonphotosyntheticvegetation.branches.ceanothus.megacarpus.vswir.vh331.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 20:
         # baccharis.pilularis.
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.shrub.baccharis.pilularis.vswir.vh006.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
         # soil
         endmember_2 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 30:
         # baccharis.pilularis.
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.shrub.baccharis.pilularis.vswir.vh006.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
         # soil
         endmember_2 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 40:
         # baccharis.pilularis.
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.shrub.baccharis.pilularis.vswir.vh006.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
         # rock outcrop.. granite
         endmember_2 = pd.read_csv(f'{eco_dir}/rock.igneous.felsic.solid.all.granite_h1.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 50:
         # Asphalt road
         endmember_1 = pd.read_csv(f'{eco_dir}/manmade.road.pavingasphalt.solid.all.0674uuuasp.jhu.becknic.spectrum.txt', #urban
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
         # rock outcrop.. granite
         endmember_2 = pd.read_csv(f'{eco_dir}/rock.igneous.felsic.solid.all.granite_h1.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 60:
         # soil
         endmember_1 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
         # rock outcrop.. granite
         endmember_2 = pd.read_csv(f'{eco_dir}/rock.igneous.felsic.solid.all.granite_h1.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 70:
         # soil
         endmember_1 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
         
         # rock outcrop.. granite
         endmember_2 = pd.read_csv(f'{eco_dir}/rock.igneous.felsic.solid.all.granite_h1.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 80:
         # Ponderosa Pine
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.tree.pinus.ponderosa.vswir.vh249.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
 
         # soil
         endmember_2 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 90:
         # Ponderosa Pine
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.tree.pinus.ponderosa.vswir.vh249.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
 
         # soil
         endmember_2 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     elif landcover_value == 95:
         # Ponderosa Pine
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.tree.pinus.ponderosa.vswir.vh249.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
 
         # soil
         endmember_2 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
     else:
         # Ponderosa Pine
         endmember_1 = pd.read_csv(f'{eco_dir}/vegetation.tree.pinus.ponderosa.vswir.vh249.ucsb.asd.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_1.columns = ['Wavelength', 'Reflectance']
 
         # soil
         endmember_2 = pd.read_csv(f'{eco_dir}/soil.entisol.quartzipsamment.none.all.87p706.jhu.becknic.spectrum.txt',
-                                  skiprows=20, delim_whitespace=True, header=None)
+                                  skiprows=20, sep='\s+', header=None)
         endmember_2.columns = ['Wavelength', 'Reflectance']
 
     # Match sensor_wavelength using the spline function
@@ -250,7 +250,3 @@ def initial_endmembers(sensor_wavelengths, landcover_value, lat, lon):
     endmembers_og = np.vstack((snow_spline_endmember, em_shade, em1_spline_endmember, em2_spline_endmember)).T / 100
 
     return endmembers_og
-
-
-
-
