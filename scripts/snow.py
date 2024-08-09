@@ -37,7 +37,7 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths,
         # This will give a very wild result but just scipy optimization will turn around
         # and keep within feasible range.
         warnings.warn('Warning...Optimization out of bounds, inserting dummy value.')
-        ssa = -10.0
+        ssa = 256
         c = 0.0
         lwc = 0.0
         theta = 0.0

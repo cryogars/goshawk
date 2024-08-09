@@ -1,11 +1,11 @@
 # Import libraries
+import warnings
 import math
 import numpy as np
 from scipy import optimize
 from initialize import initial_endmembers
 from snow import art
 from libradtran import lrt_reader
-
 
 # Define mpi wrapper function
 def compute_pixels_mpi(args):
@@ -212,7 +212,9 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
 
 
     '''
-    
+    # SLSQP gives an out of bounds clipping to allowable region warning which is a bit excessive for this application..
+    warnings.filterwarnings("ignore")
+
     # cosi was allowed to vary from -1 to 1 during clustering to create more groups
     # But now I am bringing it back into physical reality by making it range from 0-1
     # Note it cannot be exactly 0.0 here so using a very small val (1e-16)
