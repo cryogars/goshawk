@@ -233,7 +233,7 @@ def initial_endmembers(sensor_wavelengths, landcover_value, lat, lon):
 
     # Provide initial snow reflectance for speeding up optimization
     snow_endmember = pd.read_csv(f'{eco_dir}/water.snow.mediumgranular.medium.all.medgran_snw_.jhu.becknic.spectrum.txt',
-                                 skiprows=20, delim_whitespace=True, header=None)
+                                 skiprows=20, sep='\s+', header=None)
     snow_endmember.columns = ['Wavelength', 'Reflectance']
     f_snow = interpolate.interp1d(snow_endmember['Wavelength'], snow_endmember['Reflectance'], kind='slinear', fill_value='extrapolate')
     snow_spline_endmember = (f_snow(wave_range)).T
