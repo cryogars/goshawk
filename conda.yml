@@ -1,4 +1,4 @@
-name: goshawk
+name: goshawk3
 channels:
   - conda-forge
   - defaults
@@ -235,7 +235,7 @@ dependencies:
   - netcdf4=1.7.1=nompi_py310hf3005e6_101
   - nspr=4.35=h27087fc_0
   - nss=3.103=h593d115_0
-  - numpy=2.0.1=py310hf9f9071_0
+  - numpy=1.26.4
   - openjpeg=2.5.2=h488ebb8_0
   - openssl=3.3.1=h4bc722e_2
   - orc=2.0.1=h17fec99_1

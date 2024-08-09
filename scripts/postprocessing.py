@@ -60,7 +60,6 @@ def kmeans_tifs(cluster_matches, selected_cosi,path_to_img_base, dem, cloud_mask
         ras_meta = src.profile
 
     # Get each of the complete arrays from match-cluster list
-    # columns=['uni_id', 'i', 'j', 'elev','cosi', 'cosv','theta', 'slope','aspect','svf','lc','shadow','rmse'])
     for p in cluster_matches:
         
         # Save to the arrays
@@ -72,7 +71,7 @@ def kmeans_tifs(cluster_matches, selected_cosi,path_to_img_base, dem, cloud_mask
             rmse_arr[int(p[1]), int(p[2])] = -9999
         else:
             # get kmeans data
-            cosi_kmeans = cosi_dict[p[0]]
+            cosi_kmeans = cosi_dict[int(p[0])]
             d_cosi_arr[int(p[1]), int(p[2])]  = cosi_kmeans - cosij
             kmeans_arr[int(p[1]), int(p[2])] = p[0]
             rmse_arr[int(p[1]), int(p[2])] = p[12]

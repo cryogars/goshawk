@@ -215,7 +215,7 @@ def invert_snow_and_atmos_props(i, r, alt, cosi, cosv,
     
     # cosi was allowed to vary from -1 to 1 during clustering to create more groups
     # But now I am bringing it back into physical reality by making it range from 0-1
-    # Note on TARTES, it cannot be exactly 0.0 here so using a very small val (1e-16)
+    # Note it cannot be exactly 0.0 here so using a very small val (1e-16)
     if cosi <= 0.0:
         cosi = 1e-16
     

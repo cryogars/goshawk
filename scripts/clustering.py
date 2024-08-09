@@ -182,7 +182,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     # Convert back to aspect (0-360)
     pdf['aspect'] = np.degrees(np.arctan2(pdf['e'], pdf['n']))
     pdf['aspect'] = pdf['aspect'].apply(lambda x: x+360 if x < 0.0 else x)
-    print(pdf)
+
     # Vectorize for better looping below
     np_mean = pdf.to_numpy()
 
