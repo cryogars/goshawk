@@ -92,7 +92,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 - libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance
 - better cloud filtering within goshawk
 
-## Current speeds
+## Current speeds (on PRISMA PRS_L1_STD_OFFL_20210429180418_20210429180422_0001)
 - PT1: 48 CPU - Run time 00:14:05
-- PT2: 192 CPU - Run time 00:11:00
+- PT2: 192 CPU - Run time 00:9:34
 - PT3: 48 CPU - Run time 00:01:54
