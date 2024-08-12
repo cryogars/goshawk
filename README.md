@@ -90,6 +90,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 
 ## Ideas for improvements
 - libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance
+- better cloud filtering within goshawk
 
 ## Current speeds
 - PT1: 48 CPU - Run time 00:14:05
