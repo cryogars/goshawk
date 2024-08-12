@@ -14,6 +14,7 @@
 ulimit -v unlimited
 ulimit -s unlimited
 
+module purge
 module load slurm
 
 
