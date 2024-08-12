@@ -69,12 +69,13 @@ def ssa_fun(i, j, spectra, cosi_ij, cosv_ij, theta_ij, ndsi_ij, sensor_wavelengt
         return [i,j, -9999, -9999]
 
     # Remove bands not in inversion window for snow and atmos.
+    # only observe from 900 nm - 1150 nm
     sensor_wavelengths_transpose = sensor_wavelengths.T
-    ix_1 = np.argwhere((sensor_wavelengths_transpose >= 2450) & (sensor_wavelengths_transpose <= 2700))
-    ix_2 = np.argwhere((sensor_wavelengths_transpose >= 1780) & (sensor_wavelengths_transpose <= 1950))
-    ix_3 = np.argwhere((sensor_wavelengths_transpose >= 1300) & (sensor_wavelengths_transpose <= 1450))
+    #ix_1 = np.argwhere((sensor_wavelengths_transpose >= 2450) & (sensor_wavelengths_transpose <= 2700))
+    #ix_2 = np.argwhere((sensor_wavelengths_transpose >= 1780) & (sensor_wavelengths_transpose <= 1950))
+    ix_3 = np.argwhere((sensor_wavelengths_transpose >= 1150) & (sensor_wavelengths_transpose <= 2700))
     ix_4 = np.argwhere((sensor_wavelengths_transpose >= 300) & (sensor_wavelengths_transpose <= 900))
-    ix = np.concatenate((ix_1, ix_2, ix_3, ix_4))
+    ix = np.concatenate((ix_3, ix_4))
 
      #(fsnow,ssa,LWC)
     x0 = [0.9,0.1, 0.25, 0.01]
