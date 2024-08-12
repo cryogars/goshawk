@@ -1,0 +1,7 @@
+## Code used to compute SSA and LWC from AVIRIS-NG SnowEx Dataset
+https://nsidc.org/data/snex21_ssr/versions/1
+
+can be ran by others by running `compute_aviris.py`
+
+requires similar packages to https://github.com/cryogars/goshawk
+
