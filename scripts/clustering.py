@@ -73,7 +73,7 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
     i_chunks_list = []
     j_chunks_list = []
     for uni in unique_cosi:
-        idx = np.where(cosi_array_flat==uni)
+        idx = np.where(cosi_array_flat==uni)[0] 
         chunks_list.append(rad_array_flat[idx,:])
         i_chunks_list.append(i_array_flat[idx])
         j_chunks_list.append(j_array_flat[idx])
@@ -109,14 +109,14 @@ def kmeans_grouping(rad_og, cloud_mask, dem, cosi, cosv,
         j_chunk_clean = np.array(j_chunk_clean)
         
         if chunk_clean.size != 0:
-            #chunk_clean = np.expand_dims(chunk_clean, axis=0)
+            chunk_clean = np.expand_dims(chunk_clean, axis=0)
             (m, c) = kmeans(chunk_clean, max_clusters, max_iterations)
             for q in range(c.shape[0]): 
                 locs_in_chunk = np.argwhere(m == q)
                 if locs_in_chunk.size != 0:
                     spectra_dict[uni_id] = c[q]
                     for loc in locs_in_chunk:
-                        idx_kmeans = int(loc[0])
+                        idx_kmeans = int(loc[1])
                         i_exact = int(i_chunk_clean[idx_kmeans])
                         j_exact = int(j_chunk_clean[idx_kmeans])
                         dem_ij = dem[i_exact, j_exact] / 1000 #km   
