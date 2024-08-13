@@ -205,8 +205,9 @@ def get_canopy_cover(path_to_img_base, bounds, dem, service_account, ee_json, co
 
     
     else: # col = 'NASA/MEASURES/GFCC/TC/v3'
+        
         # For now this is just a static canopy cover from 2015
-        cc = ee.ImageCollection(col).select('tree_canopy_cover').filter(ee.Filter.date('2015-01-01', '2015-12-31')).mean().unmask(-9999)
+        cc = ee.ImageCollection(col).select('tree_canopy_cover').filter(ee.Filter.date('2015-01-01', '2015-12-31')).mean().unmask(-9999).toInt().clip(area)
         # Max download size is 50.33 MB
         if 'EMIT' in path_to_img_base: 
             url = cc.getDownloadUrl({
