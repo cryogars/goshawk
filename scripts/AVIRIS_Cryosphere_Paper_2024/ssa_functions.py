@@ -102,4 +102,4 @@ def ssa_fun(i, j, spectra, cosi_ij, cosv_ij, theta_ij, ndsi_ij, sensor_wavelengt
         lwc = -9999
 
 
-    return [i, j, ssa_ij,lwc, fsnow]
+    return [i, j, ssa_ij,lwc]
