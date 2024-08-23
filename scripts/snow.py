@@ -25,7 +25,7 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths,
     g and b - shape of grain
 
     Soot, c is soot concentration (Bond 2006) in units of ng /g.
-    Dust, c is dust concentration (Caponi 2017) in units of ng / g. We assume MAE400=180 and aae=3.2
+    Dust, c is dust concentration (Caponi 2017) in units of micro g / g. We assume MAE400=180 and aae=3.2
 
     '''
 
