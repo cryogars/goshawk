@@ -345,8 +345,9 @@ def lrt_reader(h, aod, alt, cosi, sza, shadow,svf, slope, rho_surface,
 
     # Add in adjacent pixels estimate (terrain influence)
     # https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020JD034294
+    # This only impacts diffuse component.
     ct = max(0,((1 + np.cos(np.radians(slope))) / 2 ) - svf)
-    s_total = s_total + ((edir0+edn0)*rho_surface * ct)
+    s_total = s_total + ((edn0)*rho_surface * ct)
 
     # Correct units to be microW/cm2/nm/sr
     s_total = s_total / 10
