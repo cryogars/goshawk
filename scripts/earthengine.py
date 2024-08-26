@@ -138,6 +138,50 @@ def get_o3(obs_time, bounds, service_account, ee_json):
     return o3
 
 
+def get_albedo(obs_time, bounds, service_account, ee_json):
+    '''
+    Uses MODIS or VIIRS albedo to estimate general land surface albedo for the image.
+
+    This gets at ensuring there is no case 1 or case 2 hooking occuring due to too dark background reflectance in libRadtran.
+
+    Albedo will vary a lot across the image, but the idea is that this should generally capture the atmospheric/diffuse scale well.
+
+    Args:
+        obs_time (datetime object): timestamp of the image
+        path_to_img_base (str): Path to the base image directory.
+        bounds (list): List of bounding coordinates [west, south, east, north].
+        dem (str): DEM identifier.
+        service_account (str): Google Earth Engine service account.
+        ee_json (str): Path to the Earth Engine JSON key file.
+
+    Returns:
+        albedo (float): average land surface albedo for entire image
+    '''
+
+    # This is specific to my Google server account to be able to run on linux cluster
+    service_account = service_account
+    credentials = ee.ServiceAccountCredentials(service_account, ee_json)
+    ee.Initialize(credentials)
+
+    # Define our area of interest (based on bounds from init script)
+    area = ee.Feature(ee.Geometry.Rectangle(bounds))
+
+    #TODO
+    # can pull average timeseries for area. obviously data will be missing due to clouds and sun.
+    # can use a S-G filter to get a pretty good seasonal graph.. 
+    # then extract a decent albedo that is accurate enough for background reflectance for libRadtran.
+
+    # in this way... I can best utilize all available MODIS albedo data based on the day of year
+
+
+    albedo = None
+
+    return albedo
+
+
+
+
+
 
 def get_canopy_cover(path_to_img_base, bounds, dem, service_account, ee_json, col='NASA/MEASURES/GFCC/TC/v3'):
     '''
