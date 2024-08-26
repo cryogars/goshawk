@@ -89,8 +89,11 @@ Please note that variable `path_to_img_base` should look like the following (ple
 - Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
 
 ## Ideas for improvements
-- libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance
-- better cloud filtering within goshawk
+- libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance, (ozone?)
+- better clouds filtering within goshawk...
+- nodes/cpu args in bash script can be pulled directly from SLURM (not needed)
+- testing Ned Bair 2024 thoughts on background reflectance for libRadtran/RTM
+
 
 ## Current speeds (on PRISMA PRS_L1_STD_OFFL_20210429180418_20210429180422_0001)
 - PT1: 48 CPU - Run time 00:14:05
