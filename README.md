@@ -87,10 +87,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 
 ## References
 - Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
-
-## Ideas for improvements
-- better clouds filtering algorithm within goshawk...
-
+- Cryosphere paper in prep.
 
 ## Current speeds (on PRISMA PRS_L1_STD_OFFL_20210429180418_20210429180422_0001)
 - PT1: 48 CPU - Run time 00:14:05
