@@ -142,6 +142,7 @@ def write_lrt_inp_irrad(o3, h , aod, a, out_str, umu, phi0, phi, sza, lat_inp, l
         f.write('source solar\n')  # extraterrestrial spectrum
         f.write('wavelength 340 2510\n')  # set range for lambda
         f.write(f'atmosphere_file {path_to_libradtran_base}/data/atmmod/afgl{atmos}.dat\n')
+        f.write(f'albedo {a}\n')  # TODO
         f.write(f'sza {sza}\n')  # solar zenith angle
         f.write('rte_solver disort\n')  # set 
         f.write('pseudospherical\n')# computed with spherical instead of plane parallel
@@ -170,7 +171,7 @@ def lrt_create_args_for_pool(h20_range,
                              phi,vza,
                              sza, lat_inp,
                              lon_inp, doy, atmos, 
-                             o3,
+                             o3, gldas_albedo,
                              lrt_dir, 
                              path_to_libradtran_bin):
     '''
@@ -187,27 +188,32 @@ def lrt_create_args_for_pool(h20_range,
         for aod in a550_range:
             for altitude_km in alt_range:
                 
+                # path radiance run
                 cmd = write_lrt_inp(o3, h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp.append([cmd,path_to_libradtran_bin])
                 
+                # upward transmittance run
                 cmd = write_lrt_inp(o3, h,aod,0, ['sur','eglo'], umu, phi0, phi, vza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp.append([cmd,path_to_libradtran_bin])
 
+                # spherical albedo run 1
                 cmd = write_lrt_inp(o3, h,aod,0.15, ['sur','eglo'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp.append([cmd,path_to_libradtran_bin])
                 
+                # spherical albedo run 2
                 cmd = write_lrt_inp(o3, h,aod,0.5, ['sur','eglo'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)   
                 lrt_inp.append([cmd,path_to_libradtran_bin])
 
-                cmd = write_lrt_inp_irrad(o3, h,aod,0, ['toa','uu'], umu, phi0, phi, sza, 
+                # incoming solar irradiance run
+                cmd = write_lrt_inp_irrad(o3, h,aod, gldas_albedo, ['toa','uu'], umu, phi0, phi, sza, 
                                 lat_inp, lon_inp, doy, altitude_km, atmos, path_to_libradtran_bin, 
                                 lrt_dir, path_to_libradtran_base)
                 lrt_inp_irrad.append([cmd,path_to_libradtran_bin])

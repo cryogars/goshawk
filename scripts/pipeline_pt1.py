@@ -15,9 +15,9 @@ import hytools as ht
 from terrain import get_surface
 from clouds import simple_cloud_threshold
 from shadow import run_ray_pool
-from earthengine import get_landcover, get_canopy_cover, get_o3
+from earthengine import *
 from clustering import kmeans_grouping
-from libradtran import lrt_prepper, lrt_create_args_for_pool, lut_grid
+from libradtran import *
 from postprocessing import kmeans_tifs
 
 
@@ -108,6 +108,9 @@ if __name__ == '__main__':
     # Get approx. O3 for entire image
     o3 = get_o3(obs_time, bounds, service_account, ee_json)
 
+    # Get approx. land surface albedo for background reflectance used in libRadtran
+    gldas_albedo = get_albedo(obs_time, lat_mean, lon_mean, service_account, ee_json)
+
     # Get rad-array, rows, cols,#bands, and sensor_wavelengths
     rad_path = path_to_img_base + '_rdn_prj'
     observed_rad = envi.open(rad_path+'.hdr')
@@ -161,7 +164,7 @@ if __name__ == '__main__':
                                                       phi,vza,
                                                       sza, lat_inp,
                                                       lon_inp, doy, atmos, 
-                                                      o3, 
+                                                      o3, gldas_albedo, 
                                                       lrt_dir, 
                                                       path_to_libradtran_bin)
 

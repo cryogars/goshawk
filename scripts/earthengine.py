@@ -7,7 +7,7 @@ import ee
 from osgeo import gdal
 import rasterio as rio
 from dateutil.relativedelta import relativedelta
-
+from datetime import datetime
 
 
 def get_landcover(path_to_img_base, bounds, dem, service_account, ee_json):
@@ -135,22 +135,19 @@ def get_o3(obs_time, bounds, service_account, ee_json):
     o3 = o3[o3 >- 9999] #mask NaN
     o3 = np.mean(o3)/ (4.4615*10**-4) # convert to mol/m2 to DU
 
+    logging.info(f'O3 estimated for image: {o3} DU')
+
     return o3
 
 
-def get_albedo(obs_time, bounds, service_account, ee_json):
+def get_albedo(obs_time, lat, lon, service_account, ee_json):
     '''
-    Uses MODIS or VIIRS albedo to estimate general land surface albedo for the image.
-
-    This gets at ensuring there is no case 1 or case 2 hooking occuring due to too dark background reflectance in libRadtran.
-
-    Albedo will vary a lot across the image, but the idea is that this should generally capture the atmospheric/diffuse scale well.
+    Uses GLDAS 2001-2023 to estimate the average land surface albedo for the entire image used to inform libRadtran.
 
     Args:
         obs_time (datetime object): timestamp of the image
-        path_to_img_base (str): Path to the base image directory.
-        bounds (list): List of bounding coordinates [west, south, east, north].
-        dem (str): DEM identifier.
+        lat (float): latitude
+        lon (float): longitude
         service_account (str): Google Earth Engine service account.
         ee_json (str): Path to the Earth Engine JSON key file.
 
@@ -158,27 +155,51 @@ def get_albedo(obs_time, bounds, service_account, ee_json):
         albedo (float): average land surface albedo for entire image
     '''
 
-    # This is specific to my Google server account to be able to run on linux cluster
-    service_account = service_account
+    # Initialize Earth Engine with service account
     credentials = ee.ServiceAccountCredentials(service_account, ee_json)
     ee.Initialize(credentials)
 
-    # Define our area of interest (based on bounds from init script)
-    area = ee.Feature(ee.Geometry.Rectangle(bounds))
+    # Define the point of interest (latitude, longitude)
+    point = ee.Geometry.Point([lon, lat])
 
-    #TODO
-    # can pull average timeseries for area. obviously data will be missing due to clouds and sun.
-    # can use a S-G filter to get a pretty good seasonal graph.. 
-    # then extract a decent albedo that is accurate enough for background reflectance for libRadtran.
+    # List to hold the albedo values
+    albedo_values = []
 
-    # in this way... I can best utilize all available MODIS albedo data based on the day of year
+    # Loop through each year and extract the data
+    for year in range(2001, 2024):
 
+        # Adjust the target date to the specific year
+        date = obs_time.replace(year=year)
+        start_date = date.strftime('%Y-%m-%d')
+        
+        # Filter the dataset for the specific date and hour (noon)
+        image = (ee.ImageCollection('NASA/GLDAS/V021/NOAH/G025/T3H')
+                .filter(ee.Filter.date(start_date))
+                .select('Albedo_inst')
+                .mean())
+        
+        # Extract the value at the point
+        value = image.reduceRegion(
+            reducer=ee.Reducer.mean(),
+            geometry=point,
+            scale=30000
+        ).get('Albedo_inst').getInfo()
+        
+        if value is not None:
+            albedo_values.append(value)
 
-    albedo = None
+    # Calculate mean
+    gldas_albedo = np.nanmean(albedo_values) / 100
+    print(gldas_albedo)
 
-    return albedo
+    # Check in case there is no data or out-of-bounds data
+    if np.isnan(gldas_albedo) or gldas_albedo < 0.0 or gldas_albedo > 0.95:
+        gldas_albedo = 0.7
 
+    # Output the results
+    logging.info(f'libRadtran background reflectance estimated for image: {gldas_albedo} ')
 
+    return gldas_albedo
 
 
 
