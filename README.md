@@ -89,7 +89,6 @@ Please note that variable `path_to_img_base` should look like the following (ple
 - Wilder, Brenton A., et al. "Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering." IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing (2024).
 
 ## Ideas for improvements
-- libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance, (ozone?)
 - better clouds filtering algorithm within goshawk...
 
 
