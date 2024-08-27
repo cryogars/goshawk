@@ -90,9 +90,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 
 ## Ideas for improvements
 - libRadtran surrogate that contains: f_dir, f_diff, h20, aod550, atmos-spher albedo, upward transmittance, path radiance, (ozone?)
-- better clouds filtering within goshawk...
-- nodes/cpu args in bash script can be pulled directly from SLURM (not needed)
-- testing Ned Bair 2024 thoughts on background reflectance for libRadtran/RTM
+- better clouds filtering algorithm within goshawk...
 
 
 ## Current speeds (on PRISMA PRS_L1_STD_OFFL_20210429180418_20210429180422_0001)

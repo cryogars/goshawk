@@ -28,6 +28,8 @@ if __name__ == '__main__':
                         help='path to EE json credentials')
     parser.add_argument('--mu', type=str, required=True,
                         help='optimal terrain?')
+    parser.add_argument('--impurity', type=str, required=True,
+                        help='Specify Dust or Soot for impurity.')
     parser.add_argument('--n_cpu', type=int, required=True,
                         help='number of cpus')  
     # Parse user args
@@ -38,7 +40,9 @@ if __name__ == '__main__':
     service_account = args.ee_account
     ee_json = args.ee_json
     optimal_cosi = args.mu
+    impurity_type = args.impurity
     n_cpu = args.n_cpu
+
 
     # Check whether log directory exists, if not, make one
     log_dir = f'{path_to_img_base}_albedo/logs'
