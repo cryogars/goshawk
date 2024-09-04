@@ -6,8 +6,7 @@ import pandas as pd
 from scipy import interpolate
 
 
-def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, 
-        g=0.75, b=1.6, pollutant='Dust'):
+def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths, pollutant='Dust'):
     '''
 
     https://doi.org/10.3389/fenvs.2021.644551
@@ -32,6 +31,7 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths,
     # Adjust wavelengths
     wavelengths = sensor_wavelengths*1e-9
 
+
     # Ensure optimization stays in bounds
     if ssa<= 0.0 or c < 0.0 or lwc < 0.0 or cos_sza <= 0.0 :
         # This will give a very wild result but just scipy optimization will turn around
@@ -49,6 +49,10 @@ def art(ssa, c, lwc, cos_sza, cos_vza, theta, sensor_wavelengths,
 
     # Get ice and soot imag indices
     r_ice,k_ice = refice2016(wavelengths)
+
+    # Set snow optical shapes
+    g = 0.82 # Middle range of Robledano et al. 2023
+    b = r_ice**2 #B=n2 from Robledano et al. 2023
 
     # Load in Segelstein 81 water data
     water_path = './data/segelstein81_index.csv'
