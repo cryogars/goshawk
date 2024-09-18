@@ -7,7 +7,7 @@ import ee
 from osgeo import gdal
 import rasterio as rio
 from dateutil.relativedelta import relativedelta
-from datetime import datetime
+from datetime import timedelta
 
 
 def get_landcover(path_to_img_base, bounds, dem, service_account, ee_json):
@@ -162,42 +162,36 @@ def get_albedo(obs_time, lat, lon, service_account, ee_json):
     # Define the point of interest (latitude, longitude)
     point = ee.Geometry.Point([lon, lat])
 
-    # List to hold the albedo values
-    albedo_values = []
+    # Define the start and end dates of the two-week period
+    start_date = (obs_time - timedelta(days=7)).strftime('%Y-%m-%d')
+    end_date = (obs_time + timedelta(days=7)).strftime('%Y-%m-%d')
 
-    # Loop through each year and extract the data
-    for year in range(2001, 2024):
+    # Filter the dataset for the specific date range
+    collection = (ee.ImageCollection('NASA/GLDAS/V021/NOAH/G025/T3H')
+                  .filter(ee.Filter.date(start_date, end_date))
+                  .select('Albedo_inst'))
 
-        # Adjust the target date to the specific year
-        date = obs_time.replace(year=year)
-        start_date = date.strftime('%Y-%m-%d')
-        
-        # Filter the dataset for the specific date and hour (noon)
-        image = (ee.ImageCollection('NASA/GLDAS/V021/NOAH/G025/T3H')
-                .filter(ee.Filter.date(start_date))
-                .select('Albedo_inst')
-                .mean())
-        
-        # Extract the value at the point
-        value = image.reduceRegion(
-            reducer=ee.Reducer.mean(),
-            geometry=point,
-            scale=30000
-        ).get('Albedo_inst').getInfo()
-        
-        if value is not None:
-            albedo_values.append(value)
+    # Compute the mean of the albedo values over the specified time period
+    mean_image = collection.mean()
 
-    # Calculate mean
-    gldas_albedo = np.nanmean(albedo_values) / 100
-    print(gldas_albedo)
+    # Extract the value at the point
+    value = mean_image.reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=point,
+        scale=30000
+    ).get('Albedo_inst').getInfo()
+
+    if value is not None:
+        gldas_albedo = value / 100
+    else:
+        gldas_albedo = 0.7  # Default value if no data is available
 
     # Check in case there is no data or out-of-bounds data
     if np.isnan(gldas_albedo) or gldas_albedo < 0.0 or gldas_albedo > 0.95:
         gldas_albedo = 0.7
 
     # Output the results
-    logging.info(f'libRadtran background reflectance estimated for image: {gldas_albedo} ')
+    logging.info(f'libRadtran two-week background reflectance estimated for image: {gldas_albedo} ')
 
     return gldas_albedo
 
