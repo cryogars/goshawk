@@ -90,7 +90,7 @@ Please note that variable `path_to_img_base` should look like the following (ple
 
 - Wilder, B. A., Meyer, J., Enterkine, J., and Glenn, N. F.: Improved snow property retrievals by solving for topography in the inversion of at-sensor radiance measurements, The Cryosphere, 18, 5015–5029, https://doi.org/10.5194/tc-18-5015-2024, 2024.
 
-- Wilder, B. A., Lee, C. M., Chlus, A., Marshall, H. P., Brandt, J., Kinoshita, A. M., Enterkine, J., , Van Der Weide, T., & Glenn, N. F. Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means spectral clustering. IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing, vol. 17, pp. 8594-8605, https://doi.org/10.1109/JSTARS.2024.3386834, 2024.
+- Wilder, B. A., Lee, C. M., Chlus, A., Marshall, H. P., Brandt, J., Kinoshita, A. M., Enterkine, J., , Van Der Weide, T., & Glenn, N. F. Computationally efficient retrieval of snow surface properties from spaceborne imaging spectroscopy measurements through dimensionality reduction using k-means clustering. IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing, vol. 17, pp. 8594-8605, https://doi.org/10.1109/JSTARS.2024.3386834, 2024.
 
 
 ## Current speeds (on PRISMA PRS_L1_STD_OFFL_20210429180418_20210429180422_0001)
