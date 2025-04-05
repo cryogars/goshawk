@@ -5,13 +5,15 @@
     <img src="docs/goshawk.png" alt="goshawk" width="300"/>
 </p>
 
-This repository was created for use in my PhD dissertation and will be updated to the best I can moving forward. Pull requests, contributions, and issues are welcome!
+__NOTE: This repository was created for use in my PhD dissertation and is stored as is and will likely not be updated too much in the future.__
 
 GOSHAWK can be used to take in imaging spectroscopy radiance data (microW cm-2 nm-1 sr-1) and output optical snow properties. Our algorithm solves for these properties simultaneously using numerical optimization of surface and atmospheric state variables. This code expects the light wavelengths to range from roughly 350-2500nm. 
 
-In it's current state, GOSHAWK expects PRISMA L1A processed via [SISTER](https://github.com/EnSpec/sister) or EMIT L1B processed via SISTER. Other missions may be adapted using this framework.
+GOSHAWK expects PRISMA L1A processed via [SISTER](https://github.com/EnSpec/sister) or EMIT L1B processed via SISTER. Other missions may be adapted using this framework.
 
 The code was designed to be ran on any kind of Linux clusters mananged by SLURM (e.g., Boise State's **R2** and **Borah** clusters, https://bsu-docs.readthedocs.io/en/latest/) with large amounts of CPU across many nodes. It is __not recommended__ running this on a personal machine, unless your personal machine has access to approx. 192 CPU and 192 GB RAM.  The biggest bottleneck for this being accessible to average machine in 2024 (n-cpu ~ 4-10) is __libRadtran__ LUT for each image. The other major bottleneck is the numerical optimizations themselves. Even with dimensionality reduction the average number of optimizations is around 50-100k for a PRISMA-like image. With each optimization taking a second or so, these tasks add up significantly on personal machines. SLSQP is a quality constrained,non-linear solver and is quite fast already written in fortran. Therefore, there is not a really obvious solution to speed this up for personal machine use ... __TLDR; use this code on a Linux cluster.__
+
+- 5 April 2025 - A note to folks reproducing / improving from this work. libRadtran RTM was ran at fairly coarse resolution and I also did not account for sensor FWHM in the convolution. I used spline interpolation only. Therefore, a simple improvment to this code would be to account for resampling of the wavelengths in a more precise way. Since I ran libRadtran in "coarse" mode, this error is reduced, but still present. 
 
 
 ## 1. Required image inputs :framed_picture:
